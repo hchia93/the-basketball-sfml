@@ -1,20 +1,13 @@
-# Ignore all files by default
-/*
+# Build directories
+Build/
+Intermediate/
+generated-vs/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
 
-# Allow source and resources
-!/src
-!/resource
-
-# Ignore build and generated directories
-/Build
-/Intermediate
-/generated-vs
-/CMakeFiles
-/CMakeCache.txt
-/Makefile
-/cmake_install.cmake
-
-# Ignore binaries and build artifacts
+# Binaries and build artifacts
 *.pdb
 *.o
 *.obj
@@ -28,7 +21,23 @@
 *.so
 *.dylib
 
-# Allow git and license files
-!.gitattributes
-!.gitignore
-!LICENSE
+# IDE files
+.vs/
+.vscode/
+*.vcxproj.user
+*.vcxproj.filters
+*.sln.docstates
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
