@@ -2,7 +2,7 @@
 
 class ITickable
 {
-public:
-	virtual void Tick() = 0;
+	public:
+		virtual void Tick() = 0;
 };
 

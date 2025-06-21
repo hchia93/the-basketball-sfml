@@ -1,12 +1,11 @@
-#include <box2d/box2d.h>
+#include <Box2D/Box2D.h>
 #include "TickHandle.h"
 #include "Application.h"
-#include "Box2DHelper.h"
 
 
 FTickHandle::FTickHandle()
 {
-	FixedUpdateClock.restart();
+
 }
 
 FTickHandle::~FTickHandle()
@@ -17,36 +16,33 @@ FTickHandle::~FTickHandle()
 bool FTickHandle::BindApplication(Application* Object)
 {
 	ContextObject = Object;
-	return true;
+	return ContextObject != nullptr;
 }
 
 void FTickHandle::BeginTick()
 {
-	while (AppWindow.isOpen())
-	{
-		Tick();
-	}
+	Tick();
 }
 
 void FTickHandle::Tick()
 {
-	// Fixed time step for physics simulation
-	const float DeltaTime = DELTA_TIME_STEP;
+	if (!ContextObject) return;
+	if (!ContextObject->GetWorld()) return;
+
 	
-	// Step the physics world
-	if (ContextObject && Box2DHelper::IsValid(ContextObject->GetWorld()))
+	TimeElapsedSinceLastFrame += FixedUpdateClock.restart().asSeconds();
+	if (TimeElapsedSinceLastFrame >= DELTA_TIME_STEP)
 	{
-		Box2DHelper::WorldStep(ContextObject->GetWorld(), DeltaTime);
-	}
-	
-	// Update elapsed time
-	ElapsedTime += DeltaTime;
-	TimeElapsedSinceLastFrame = DeltaTime;
-	
-	// Call the application's tick function
-	if (ContextObject)
-	{
-		ContextObject->Tick(DeltaTime);
+		// Step is used to update physics position/rotation
+		ContextObject->GetWorld()->Step(DELTA_TIME_STEP,	//update frequency
+			8,												//velocityIterations
+			3												//positionIterations  
+		);
+
+		ContextObject->Tick(DELTA_TIME_STEP);
+		TimeElapsedSinceLastFrame -= DELTA_TIME_STEP;
+
+		ElapsedTime += DELTA_TIME_STEP;
 	}
 }
 

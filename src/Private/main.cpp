@@ -1,17 +1,14 @@
 #pragma once
-#include <memory>
 #include "Application.h"
 
 int main()
 {
-	std::unique_ptr<Application> instance = std::make_unique<Application>();
+	std::unique_ptr<Application> Instance = std::make_unique<Application>(); 
 	
-	if (instance)
+	if (Instance)
 	{
-		if (instance->Initialize())
-		{
-			instance->BeginPlay();
-		}
+		if(Instance->Initialize())
+			Instance->BeginPlay();
 	}
 	return 0;
 }

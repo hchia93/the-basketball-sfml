@@ -2,46 +2,45 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
-#include <box2d/box2d.h>
-#include <memory>
-#include <vector>
+#include <Box2D/Box2D.h>
 #include "TickHandle.h"
 #include "AssetLoader.h"
 #include "GameState.h"
 #include "TextRenderer.h"
 #include "Defines.h"
-#include "Box2DHelper.h"
 
 class b2Actor2D;
 class b2Actor2DContactListener;
 
 struct FRenderWindowData
 {
-	sf::Vector2u m_WindowSize = { 1000, 728 };
-	std::string m_WindowName = "The BasketBall";
+	int Width = 1000;
+	int Height = 728;
+	int BitsPerPixel;
 	
-	sf::VideoMode GetVideoModeFromData()
-	{
-		return sf::VideoMode(m_WindowSize);
-	}
+	std::string WindowName = "BasketBallSimulator";
+
+	inline SFML::VideoMode	GetVideoModeFromData()	{	return SFML::VideoMode(Width, Height, BitsPerPixel);	}
+	inline std::string		GetWindowName()			{	return WindowName;	}
 };
 
 class Application
 {
 public:
 	Application();
-	~Application();
+	~Application();;
 
 	int Initialize();
 	void BeginPlay();
 	void Tick(const float DeltaTime);
 	void EndPlay();
 
-	b2WorldId GetWorld() const { return m_WorldId; }
-	FTickHandle& GetTickHandle() { return m_TickHandle; }
-	sf::RenderWindow* GetWindow() { return &m_AppWindow; }
+	b2World* GetWorld() const { return World.get(); }
+	FTickHandle& GetTickHandle() { return TickHandle;  }
+	SFML::RenderWindow* GetWindow() { return &AppWindow; }
 
 private:
+
 	static void PivotTick(b2Actor2D* Actor);
 	static void WheelTick(b2Actor2D* Actor);
 	static void BallTick(b2Actor2D* Actor);
@@ -52,45 +51,47 @@ private:
 	void SetupText();
 	void SpawnBall();
 
-	FTickHandle m_TickHandle;
-	FAssetLoader m_AssetLoader;
-	FGameState m_GameState;
-	FTextRenderer m_TextRenderer;
+	FTickHandle TickHandle;
+	FAssetLoader AssetLoader;
+	FGameState GameState;
+	FTextRenderer TextRenderer;
 
-	FRenderWindowData m_RenderWindowData;
-	sf::RenderWindow m_AppWindow;
+	FRenderWindowData RenderWindowData;
+	SFML::RenderWindow AppWindow;
 
-	sf::Music* m_BGM;
+	SFML::Music* BGM;
 	
-	// Box2D 3.x
-	b2Vec2 m_Gravity; 
-	b2WorldId m_WorldId;
-	std::unique_ptr<b2Actor2DContactListener> m_b2ActorContactListner;
+	//Box2D
+	b2Vec2 Gravity; 
+	std::shared_ptr<b2World> World;
+	std::unique_ptr<b2Actor2DContactListener> b2ActorContactListner;
 
-	std::vector<std::unique_ptr<sf::Shape>> m_RenderShapes;
-	std::vector<std::unique_ptr<b2Actor2D>> m_b2Actors;
-	std::vector<std::unique_ptr<b2Actor2D>> m_Balls;
+	std::vector<std::unique_ptr<SFML::Shape>> RenderShapes;
+	std::vector<std::unique_ptr<b2Actor2D>> b2Actors;
+	std::vector<std::unique_ptr<b2Actor2D>> Balls;
 
-	sf::Vertex m_AngleIndicators[2];
+	SFML::Vertex AngleIndicators[2];
 
-	bool m_bRightMousePressed = false;
-	bool m_bMiddleMousePressed = false;
+	bool bRightMousePressed = false;
+	bool bMiddleMousePressed = false;
 
 	//////////////////////////////////////////
 	//		Cached Pointers
 	//////////////////////////////////////////
 
-	sf::RectangleShape* m_ChargeGaugeMax;		// Cached pointer, no need clear. Cleared via RenderShapes.
-	sf::RectangleShape* m_ChargeGaugeProgress;	// Cached pointer, no need clear. Cleared via RenderShapes.
+	SFML::RectangleShape* ChargeGaugeMax;		// Cached pointer, no need clear. Cleared via RenderShapes.
+	SFML::RectangleShape* ChargeGaugeProgress;	// Cached pointer, no need clear. Cleared via RenderShapes.
 
-	b2Actor2D* m_PivotCache;		// Cached pointer, no need clear. Cleared via b2Actors.
-	b2Actor2D* m_WheelCache;		// Cached pointer, no need clear. Cleared via b2Actors.
+	b2Actor2D* PivotCache;		// Cached pointer, no need clear. Cleared via b2Actors.
+	b2Actor2D* WheelCache;		// Cached pointer, no need clear. Cleared via b2Actors.
 
-	FTextData* m_LevelTextCache;
-	FTextData* m_ScoreCache;
-	FTextData* m_HiScoreCache;
-	FTextData* m_BallCountCache;
-	FTextData* m_CountdownTimeCache;
-	FTextData* m_ElapsedTimeCache;
-	FTextData* m_CenterTextCache;
+	FTextData* LevelTextCache;
+	FTextData* ScoreCache;
+	FTextData* HiScoreCache;
+	FTextData* BallCountCache;
+	FTextData* CountdownTimeCache;
+	FTextData* ElapsedTimeCache;
+	FTextData* CenterTextCache;
+
+	
 };

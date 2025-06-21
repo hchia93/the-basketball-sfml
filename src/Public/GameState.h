@@ -2,7 +2,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <sstream>
-#include <string>
 #include "Defines.h"
 #include "Interface.h"
 
@@ -11,6 +10,7 @@ class Application;
 class FGameState : ITickable
 {
 public:
+	
 	FGameState();
 	void ResetValues();
 	void ChargeProjectionVelocity();
@@ -20,48 +20,48 @@ public:
 
 	void StartGame();
 	void ResetGame();
-	void ScoreBall() { m_Score++; m_RequiredBallCount--; }
+	void ScoreBall()				{ Score++; RequiredBallCount--; }
 
-	int GetScore() const { return m_Score; }
-	int GetHiScore() const { return m_HiScore; }
-	int GetLevel() const { return m_Level; }
-	int GetBallCount() const { return m_RequiredBallCount; }
+	int GetScore()					const	{ return Score; }
+	int GetHiScore()				const	{ return HiScore; }
+	int GetLevel()					const	{ return Level; }
+	int GetBallCount()				const	{ return RequiredBallCount; }
 
-	float GetCountDownTime() const { return m_CountdownTime; }
-	float GetSurvivedTime() const { return m_TotalSurvivedTime; }
-	float GetAddOnTime() const { return m_AdditionalTime; }
-	float GetChargedBallVelocity() const { return m_BallVelocity; }
+	float GetCountDownTime()		const	{ return CountdownTime; }
+	float GetSurvivedTime()			const	{ return TotalSurvivedTime; }
+	float GetAddOnTime()			const	{ return AdditionalTime; }
+	float GetChargedBallVelocity()	const	{ return BallVelocity; }
 
-	bool GetIsLevelUp() const { return m_bIsLevelUp; }
-	bool GetIsGameOver() const { return m_bIsGameOver; }
-	bool GetIsGameStarted() const { return m_bIsGameStarted; }
+	bool GetIsLevelUp()				const	{ return bIsLevelUp; }
+	bool GetIsGameOver()			const	{ return bIsGameOver; }
+	bool GetIsGameStarted()			const	{ return bIsGameStarted; }
 
-	std::string GetLevelString() const { std::ostringstream ss; (ss << m_Level); return ss.str(); }
-	std::string GetReqBallString() const { std::ostringstream ss; (ss << m_RequiredBallCount); return ss.str(); }
-	std::string GetScoreString() const { std::ostringstream ss; (ss << m_Score); return ss.str(); }
-	std::string GetHiScoreString() const { std::ostringstream ss; (ss << m_HiScore); return ss.str(); }
-	std::string GetRemainingTimeString() const { std::ostringstream ss; (ss << (int)m_CountdownTime); return ss.str(); }
-	std::string GetElapsedTimeMinString() const { std::ostringstream ss; (ss << (int)(m_TotalSurvivedTime / 60.0f)); return ss.str(); }
-	std::string GetElapsedTimeSecondString() const { std::ostringstream ss; (ss << ((int)m_TotalSurvivedTime) % 60); return ss.str(); }
+	std::string GetLevelString()			const	{ std::ostringstream ss; (ss << Level);  return ss.str(); }
+	std::string GetReqBallString()			const	{ std::ostringstream ss; (ss << RequiredBallCount);  return ss.str(); }
+	std::string GetScoreString()			const	{ std::ostringstream ss; (ss << Score);  return ss.str(); }
+	std::string GetHiScoreString()			const	{ std::ostringstream ss; (ss << HiScore);  return ss.str(); }
+	std::string GetRemainingTimeString()	const	{ std::ostringstream ss; (ss << (int)CountdownTime);  return ss.str(); }
+	std::string GetElapsedTimeMinString()	const	{ std::ostringstream ss; (ss << (int)(TotalSurvivedTime / 60.0f));  return ss.str(); }
+	std::string GetElapsedTimeSecondString()const   { std::ostringstream ss; (ss << ((int)TotalSurvivedTime)%60);  return ss.str(); }
 
 private:
+
 	float GetTimeIncreament(const int CurrentLevel);
 	int GetRequirementBallCount(const int RequiredBallCount);
-	
-	int m_Score;
-	int m_HiScore;
-	int m_Level;
-	int m_RequiredBallCount;
-	float m_CountdownTime;
-	float m_TotalSurvivedTime;
-	float m_AdditionalTime;
-	float m_BallVelocity;
+	int Score;
+	int HiScore;
+	int Level;
+	int RequiredBallCount;
+	float CountdownTime;
+	float TotalSurvivedTime;
+	float AdditionalTime;
+	float BallVelocity;
 
-	bool m_bIsGameOver;
-	bool m_bIsLevelUp;
-	bool m_bIsGameStarted;
+	bool bIsGameOver;
+	bool bIsLevelUp;
+	bool bIsGameStarted;
 	
-	float m_RestartTimer = 3.0f;
-	Application* m_ContextObject;
+	float RestartTimer = 3.0f;
+	Application* ContextObject;
 };
 
