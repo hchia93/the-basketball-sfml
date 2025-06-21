@@ -1,20 +1,34 @@
- $ cat .gitignore
+# Ignore all files by default
 /*
+
+# Allow source and resources
+!/src
+!/resource
+
+# Ignore build and generated directories
 /Build
 /Intermediate
-!/Source
-!/Resources
-!/Box2D
+/generated-vs
+/CMakeFiles
+/CMakeCache.txt
+/Makefile
+/cmake_install.cmake
+
+# Ignore binaries and build artifacts
 *.pdb
 *.o
 *.obj
 *.log
-!*.vcxproj
-!*.filters
-!*.user
-!*.sln
-!*.dll
-!*.lib
+*.dll
+*.lib
+*.exe
+*.app
+*.out
+*.a
+*.so
+*.dylib
+
+# Allow git and license files
 !.gitattributes
 !.gitignore
 !LICENSE

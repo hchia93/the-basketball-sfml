@@ -18,24 +18,22 @@ public:
 	 */
 	bool BindApplication(Application* Object);
 
-	/*Wrapper function to instruct Tick().*/
+	/* Wrapper function to instruct Tick(). */
 	void BeginTick();
 
-	/* Tick body */
 	virtual void Tick() override;
 
-	/* Handle Finalization after last Tick called.*/
+	/* Handle Finalization after last Tick called. */
 	void EndTick();
 
-	float GetElapsedTime() const { return ElapsedTime;  }
+	float GetElapsedTime() const { return m_ElapsedTime; }
 	
-	void ClearTimer() { ElapsedTime = 0.0f;  }
+	void ClearTimer() { m_ElapsedTime = 0.0f; }
 
 private:
-
-	float ElapsedTime = 0.0f;
-	float TimeElapsedSinceLastFrame = 0.0f;
-	SFML::Clock FixedUpdateClock;
-	Application* ContextObject;
+	float m_ElapsedTime = 0.0f;
+	float m_TimeElapsedSinceLastFrame = 0.0f;
+	SFML::Clock m_FixedUpdateClock;
+	Application* m_ContextObject;
 };
 
