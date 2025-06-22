@@ -30,7 +30,7 @@ jobs:
         
     - name: Install vcpkg dependencies
       run: |
-        vcpkg install sfml:x64-windows
+        vcpkg install
         
     - name: Configure CMake
       run: |
