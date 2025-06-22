@@ -18,6 +18,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Configure Git
+      run: |
+        git config --global --unset-all http.https://github.com/.extraheader || true
+        git config --global --unset-all http.https://github.com/.extraheader || true
+        
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
