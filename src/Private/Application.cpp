@@ -17,11 +17,20 @@ Application::~Application() {}
 
 void Application::BeginPlay()
 {
-	while (AppWindow.isOpen())
+	while (m_AppWindow.isOpen())
 	{
-		TickHandle.BeginTick();
-	}
+		m_TimeElapsedSinceLastFrame += m_FixedUpdateClock.restart().asSeconds();
+		if (m_TimeElapsedSinceLastFrame >= DELTA_TIME_STEP)
+		{
+			// Step is used to update physics position/rotation
+			World->Step(DELTA_TIME_STEP, 8, 3);
 
+			UpdateFrame(DELTA_TIME_STEP);
+			m_TimeElapsedSinceLastFrame -= DELTA_TIME_STEP;
+
+			m_ElapsedTime += DELTA_TIME_STEP;
+		}
+	}
 	EndPlay();
 }
 
@@ -32,9 +41,7 @@ int Application::Initialize()
 	using namespace std;
 
 	bool bInitChecks = true;
-	bInitChecks &= TickHandle.BindApplication(this);
 	bInitChecks &= GameState.BindApplication(this);
-	bInitChecks &= TextRenderer.BindApplication(this);
 	bInitChecks &= m_AssetLoader.LoadResources();
 
 	if (bInitChecks)
@@ -47,20 +54,20 @@ int Application::Initialize()
 		}
 
 		// Window creation
-		AppWindow.create(RenderWindowData.GetVideoModeFromData(), RenderWindowData.GetWindowName());
-		AppWindow.setVerticalSyncEnabled(true);
+		m_AppWindow.create(m_AppWindowData.GetVideoModeFromData(), m_AppWindowData.GetWindowName());
+		m_AppWindow.setVerticalSyncEnabled(true);
 		//AppWindow.setActive();
 
 		// Border creations
 		const float BorderThickness = 16.0f;
-		const float ViewportX = (float)RenderWindowData.Width;
-		const float ViewportY = (float)RenderWindowData.Height;
-		const Vector2f XBorder(ViewportX, BorderThickness);
-		const Vector2f YBorder(BorderThickness, ViewportY * 0.7f);
-		const Vector2f UBorderLocation(ViewportX * 0.5f						, BorderThickness * 0.5f);
-		const Vector2f DBorderLocation(ViewportX * 0.5f						, ViewportY - BorderThickness * 0.5f);
-		const Vector2f LBorderLocation(BorderThickness * 0.5f				, ViewportY * 0.5f - (ViewportY * .15f) ); // 1 - .7f div 2
-		const Vector2f RBorderLocation(ViewportX - BorderThickness * 0.5f	, ViewportY * 0.5f - (ViewportY * .15f) ); // 1 - .7f div 2
+		const float viewportX = (float)m_AppWindowData.Width;
+		const float viewportY = (float)m_AppWindowData.Height;
+		const Vector2f XBorder(viewportX, BorderThickness);
+		const Vector2f YBorder(BorderThickness, viewportY * 0.7f);
+		const Vector2f UBorderLocation(viewportX * 0.5f						, BorderThickness * 0.5f);
+		const Vector2f DBorderLocation(viewportX * 0.5f						, viewportY - BorderThickness * 0.5f);
+		const Vector2f LBorderLocation(BorderThickness * 0.5f				, viewportY * 0.5f - (viewportY * .15f) ); // 1 - .7f div 2
+		const Vector2f RBorderLocation(viewportX - BorderThickness * 0.5f	, viewportY * 0.5f - (viewportY * .15f) ); // 1 - .7f div 2
 
 		// Collapsed function body. Transfering ownership of local unique ptr to the container
 		auto b2ActorInit = [this](unique_ptr<b2Actor2D>& p, const Color c) ->void 
@@ -84,12 +91,12 @@ int Application::Initialize()
 		unique_ptr<b2Actor2D> BotBorder = make_unique<b2Actor2D>(this, World.get(), "BotBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, DBorderLocation);
 		b2ActorInit(BotBorder, Color(100, 100, 100));
 #endif 
-		unique_ptr<RectangleShape> Background = make_unique<RectangleShape>(Vector2f(ViewportX, ViewportY));
+		unique_ptr<RectangleShape> Background = make_unique<RectangleShape>(Vector2f(viewportX, viewportY));
 		Background->setTexture(m_AssetLoader.FindTexture(RESOURCES_TEXTURE_BACKGROUND));
 		RenderShapes.push_back(move(Background));
 
-		unique_ptr<RectangleShape> Scoreboard = make_unique<RectangleShape>(Vector2f(ViewportX, ViewportY * .3f));
-		Scoreboard->setPosition({0.0f, ViewportY * 0.7f});
+		unique_ptr<RectangleShape> Scoreboard = make_unique<RectangleShape>(Vector2f(viewportX, viewportY * .3f));
+		Scoreboard->setPosition({0.0f, viewportY * 0.7f});
 		Scoreboard->setTexture(m_AssetLoader.FindTexture(RESOURCES_TEXTURE_CHALKBOARD));
 		RenderShapes.push_back(move(Scoreboard));
 
@@ -111,10 +118,10 @@ int Application::Initialize()
 		}
 		
 		// Board
-		const float offsetX = ViewportX * 0.98f;
-		const float offsetY = ViewportY * 0.35f;
+		const float offsetX = viewportX * 0.98f;
+		const float offsetY = viewportY * 0.35f;
 		const Vector2f boardSize(8.0f, 200.0f);
-		const Vector2f boardPos(ViewportX * 0.98f, ViewportY * 0.35f);
+		const Vector2f boardPos(viewportX * 0.98f, viewportY * 0.35f);
 
 		unique_ptr<b2Actor2D> BoardFrame1 = make_unique<b2Actor2D>(this, World.get(), "board1", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, boardSize, boardPos);
 		b2ActorInit(BoardFrame1, Color(40, 40, 40, 255));
@@ -141,16 +148,16 @@ int Application::Initialize()
 	return bInitChecks;
 }
 
-void Application::Tick(const float DeltaTime)
+void Application::UpdateFrame(const float DeltaTime)
 {
-	std::optional<sf::Event> event = AppWindow.pollEvent();
+	std::optional<sf::Event> event = m_AppWindow.pollEvent();
 	if (event.has_value() && event.value().is<sf::Event::Closed>())
 	{
-		AppWindow.close();
+		m_AppWindow.close();
 	}
 
 	GameState.Tick();
-	TextRenderer.Tick();
+	m_TextProcessor.Tick();
 
 	for (auto&& element : b2Actors)
 	{
@@ -161,28 +168,29 @@ void Application::Tick(const float DeltaTime)
 	}
 		
 
-	for (auto& element : Balls)
-	{
-		if (element)
-		{
-			element->Tick();
-		}
-	}
+	//for (auto& element : Balls)
+	//{
+	//	if (element)
+	//	{
+	//		element->Tick();
+	//	}
+	//}
 	
 	// Need to update on tick.
-	LevelTextCache->Text->setString("LEVEL\n" + GameState.GetLevelString());
-	ScoreCache->Text->setString("SCORE\n" + GameState.GetScoreString());
-	HiScoreCache->Text->setString("HISCORE\n" + GameState.GetHiScoreString());
-	BallCountCache->Text->setString("REQ. BALL\n" + GameState.GetReqBallString());
-	CountdownTimeCache->Text->setString("REMAINING TIME\n" + GameState.GetRemainingTimeString() + " S");
-	ElapsedTimeCache->Text->setString("ELAPSED MIN\n" + GameState.GetElapsedTimeMinString() + " M" + GameState.GetElapsedTimeSecondString() + " S");
+	m_LevelNumberWidget->m_Text->setString("LEVEL\n" + GameState.GetLevelString());
+	m_ScoreWidget->m_Text->setString("SCORE\n" + GameState.GetScoreString());
+	m_HiScoreWidget->m_Text->setString("HISCORE\n" + GameState.GetHiScoreString());
+	m_BallCountWidget->m_Text->setString("REQ. BALL\n" + GameState.GetReqBallString());
+	m_TimerWidget->m_Text->setString("REMAINING TIME\n" + GameState.GetRemainingTimeString() + " S");
+	m_ElapsedTimeWidget->m_Text->setString("ELAPSED MIN\n" + GameState.GetElapsedTimeMinString() + " M" + GameState.GetElapsedTimeSecondString() + " S");
 
+#if 0
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
 	{
 		if (!GameState.GetIsGameStarted())
 		{
 			GameState.StartGame();
-			CenterTextCache->bIsPaused = false;
+			m_CenterMessageWidget->m_bIsPaused = false;
 		}
 	}
 
@@ -224,10 +232,10 @@ void Application::Tick(const float DeltaTime)
 			bMiddleMousePressed = true;
 
 			GameState.ResetGame();
-			TickHandle.ClearTimer();
-			CenterTextCache->Init();
-			CenterTextCache->bIsActive = true;
-			CenterTextCache->bIsPaused = true;
+			ClearTimer();
+			m_CenterMessageWidget->Init();
+			m_CenterMessageWidget->m_bIsActive = true;
+			m_CenterMessageWidget->m_bIsPaused = true;
 			PivotCache->ResetToInitTransform();
 			WheelCache->ResetToInitTransform();
 
@@ -239,15 +247,15 @@ void Application::Tick(const float DeltaTime)
 	{
 		bMiddleMousePressed = false;
 	}
-	
+#endif
 
 	// Update Info Gauge
 	float maxVelocity = 60.0f;
 	float percentage = GameState.GetChargedBallVelocity() / maxVelocity;
 
 	const sf::Vector2f PivotLocation = PivotCache->GetLocation();
-	const sf::Vector2f MouseLocation = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
-	const sf::Vector2f OffsetMouseLocation = sf::Vector2f(sf::Vector2i(sf::Mouse::getPosition(AppWindow)) - sf::Vector2i(16, 16));
+	const sf::Vector2f MouseLocation = sf::Vector2f(sf::Mouse::getPosition(m_AppWindow));
+	const sf::Vector2f OffsetMouseLocation = sf::Vector2f(sf::Vector2i(sf::Mouse::getPosition(m_AppWindow)) - sf::Vector2i(16, 16));
 
 	ChargeGaugeMax->setPosition(OffsetMouseLocation);
 	ChargeGaugeMax->setSize({160.0f, 8.0f});
@@ -259,34 +267,33 @@ void Application::Tick(const float DeltaTime)
 	AngleIndicators[1].position = MouseLocation;
 
 	// Rendering
-	AppWindow.clear(CORNFLOWER_BLUE);
+	m_AppWindow.clear(CORNFLOWER_BLUE);
 
 	for (auto& Itr : RenderShapes)
-		AppWindow.draw(*Itr);
+		m_AppWindow.draw(*Itr);
 
 
 	for (auto& Itr : b2Actors)
-		AppWindow.draw(*Itr->GetShape());
+		m_AppWindow.draw(*Itr->GetShape());
 
 	for (auto& Itr : Balls)
 	{
-		AppWindow.draw(*Itr->GetShape());
-		AppWindow.draw(*Itr->DebugForward);
+		m_AppWindow.draw(*Itr->GetShape());
+		m_AppWindow.draw(*Itr->DebugForward);
 	}
 
-	for (auto& Itr : TextRenderer.GetTextData())
+	for (auto& Itr : m_TextProcessor.GetTextWidgets())
 	{
-		if(Itr->bIsActive)
-			AppWindow.draw(*Itr->Text);
+		if(Itr->m_bIsActive)
+			m_AppWindow.draw(*Itr->m_Text);
 	}
 
-	AppWindow.draw(AngleIndicators, 2, sf::PrimitiveType::Lines);
-	AppWindow.display();
+	m_AppWindow.draw(AngleIndicators, 2, sf::PrimitiveType::Lines);
+	m_AppWindow.display();
 }
 
 void Application::EndPlay()
 {
-	TickHandle.EndTick();
 }
 
 void Application::MakeTrack()
@@ -295,8 +302,8 @@ void Application::MakeTrack()
 	using namespace sf;
 
 	// The Track 
-	const float ViewportX = (float)RenderWindowData.Width;
-	const float ViewportY = (float)RenderWindowData.Height;
+	const float ViewportX = (float)m_AppWindowData.Width;
+	const float ViewportY = (float)m_AppWindowData.Height;
 	const int Row = 14;
 	const int Column = 2;
 
@@ -334,8 +341,8 @@ void Application::MakeProjector()
 
 	// Projector Pivot
 	const int Row = 14;
-	const float ViewportX = (float)RenderWindowData.Width;
-	const float ViewportY = (float)RenderWindowData.Height;
+	const float ViewportX = (float)m_AppWindowData.Width;
+	const float ViewportY = (float)m_AppWindowData.Height;
 	const Vector2f StartLocation(ViewportX * 0.15f, ViewportY - 16.0f - (Row * 32.0f));
 	const Vector2f Location(StartLocation.x + 32.0f, StartLocation.y + (Row / 2)*32.0f);
 	unique_ptr<b2Actor2D> Pivot = make_unique<b2Actor2D>(this, World.get(), "Pivot", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, Vector2f(8.0f, 8.0f), Location, 0.0f, false, false);
@@ -354,73 +361,36 @@ void Application::MakeProjector()
 
 void Application::SetupText()
 {
-	sf::Font* pChalkFont = m_AssetLoader.FindFont(RESOURCES_FONT_CHALK);
-	sf::Font* pPixelFont = m_AssetLoader.FindFont(RESOURCES_FONT_PIXEL);
+	auto pChalkFont = std::shared_ptr<sf::Font>(m_AssetLoader.FindFont(RESOURCES_FONT_CHALK), [](sf::Font*) {});
+	auto pPixelFont = std::shared_ptr<sf::Font>(m_AssetLoader.FindFont(RESOURCES_FONT_PIXEL), [](sf::Font*) {});
 
-	const float Unit = 32.0f;
-	const float LineY1 = 530;
-	const float LineY2 = 620;
-	std::unique_ptr<FTextData> t1 = std::make_unique<FTextData>();
-	t1->StartLocation = sf::Vector2f(80, LineY1);
-	t1->CharacterSize = 30;
-	t1->Font = pChalkFont;
-	t1->Init();
-	LevelTextCache = t1.get();
-	TextRenderer.Add(t1);
+	const float row1 = 530;
+	const float row2 = 620;
+	
+	std::unique_ptr<FTextWidget> t1 = std::make_unique<FTextWidget>(pChalkFont, 30, sf::Vector2f(80, row1));
+	m_LevelNumberWidget = m_TextProcessor.AddAndInitialize(t1);
 
-	std::unique_ptr<FTextData> t2 = std::make_unique<FTextData>();
-	t2->StartLocation = sf::Vector2f(80, LineY2);
-	t2->CharacterSize = 30;
-	t2->Font = pChalkFont;
-	t2->Init();
-	ScoreCache = t2.get();
-	TextRenderer.Add(t2);
+	std::unique_ptr<FTextWidget> t2 = std::make_unique<FTextWidget>(pChalkFont, 30, sf::Vector2f(80, row2));
+	m_ScoreWidget = m_TextProcessor.AddAndInitialize(t2);
 
-	std::unique_ptr<FTextData> t3 = std::make_unique<FTextData>();
-	t3->StartLocation = sf::Vector2f(768, LineY1);
-	t3->CharacterSize = 30;
-	t3->Font = pChalkFont;
-	t3->Init();
-	HiScoreCache = t3.get();
-	TextRenderer.Add(t3);
+	std::unique_ptr<FTextWidget> t3 = std::make_unique<FTextWidget>(pChalkFont, 30, sf::Vector2f(768, row1));
+	m_HiScoreWidget = m_TextProcessor.AddAndInitialize(t3);
 
-	std::unique_ptr<FTextData> t4 = std::make_unique<FTextData>();
-	t4->StartLocation = sf::Vector2f(768, LineY2);
-	t4->CharacterSize = 30;
-	t4->Font = pChalkFont;
-	t4->Init();
-	BallCountCache = t4.get();
-	TextRenderer.Add(t4);
+	std::unique_ptr<FTextWidget> t4 = std::make_unique<FTextWidget>(pChalkFont, 30, sf::Vector2f(768, row2));
+	m_BallCountWidget = m_TextProcessor.AddAndInitialize(t4);
 
-	std::unique_ptr<FTextData> t5 = std::make_unique<FTextData>();
-	t5->StartLocation = sf::Vector2f(368, LineY1);
-	t5->CharacterSize = 30;
-	t5->Font = pChalkFont;
-	t5->Init();
-	CountdownTimeCache = t5.get();
-	TextRenderer.Add(t5);
+	std::unique_ptr<FTextWidget> t5 = std::make_unique<FTextWidget>(pChalkFont, 30, sf::Vector2f(368, row1));
+	m_TimerWidget = m_TextProcessor.AddAndInitialize(t5);
 
-	std::unique_ptr<FTextData> t6 = std::make_unique<FTextData>();
-	t6->StartLocation = sf::Vector2f(368, LineY2);
-	t6->CharacterSize = 30;
-	t6->Font = pChalkFont;
-	t6->Init();
-	ElapsedTimeCache = t6.get();
-	TextRenderer.Add(t6);
+	std::unique_ptr<FTextWidget> t6 = std::make_unique<FTextWidget>(pChalkFont, 30, sf::Vector2f(368, row2));
+	m_ElapsedTimeWidget = m_TextProcessor.AddAndInitialize(t6);
 
-	const float ViewportX = (float)RenderWindowData.Width;
-	const float ViewportY = (float)RenderWindowData.Height;
-	std::unique_ptr<FTextData> t7 = std::make_unique<FTextData>(); // middle
-	t7->StartLocation = sf::Vector2f(ViewportX/2, ViewportY/2);
-	t7->EndLocation = sf::Vector2f(ViewportX / 2, -16);
-	t7->FadeTime = 1.0f;
-	t7->CharacterSize = 30;
-	t7->TextData = "PRESS SPACE BAR TO START";
-	t7->Font = pPixelFont;
-	t7->bIsPaused = true;
-	t7->Init();
-	CenterTextCache = t7.get();
-	TextRenderer.Add(t7);
+	std::unique_ptr<FTextWidget> t7 = std::make_unique<FTextWidget>(pPixelFont, 30, m_AppWindowData.GetViewportCenter()); // middle
+	t7->m_EndLocation = sf::Vector2f(m_AppWindowData.GetViewportCenter().x, -16);
+	t7->m_FadeTime = 1.0f;
+	t7->m_RawString = "PRESS SPACE BAR TO START";
+	t7->m_bIsPaused = true;
+	m_CenterMessageWidget = m_TextProcessor.AddAndInitialize(t7);
 }
 
 void Application::SpawnBall()
@@ -478,19 +448,22 @@ void Application::SpawnBall()
 
 void Application::PivotTick(b2Actor2D* Actor)
 {
-	if (!Actor) return;
-	//if (!Actor->GetPackage()->GameState.GetIsGameStarted()) return;
+	if (!Actor)
+	{
+		return;
+	}
 
-	const float ElapsedTime = Actor->GetPackage()->GetTickHandle().GetElapsedTime();
-	const float deltaY = 3.0f * cosf(ElapsedTime) / 32.0f;
+	const float deltaY = 3.0f * cosf(Actor->GetPackage()->GetElapsedTime()) / 32.0f;
 	b2Vec2 Location = Actor->GetBodyInstance()->GetPosition() + b2Vec2(0, deltaY);
 	Actor->GetBodyInstance()->SetTransform(Location, Actor->GetBodyInstance()->GetAngle());
 }
 
 void Application::WheelTick(b2Actor2D* Actor)
 {
-	if (!Actor) return;
-	//if (!Actor->GetPackage()->GameState.GetIsGameStarted()) return;
+	if (!Actor)
+	{
+		return;
+	}
 
 	b2Vec2 PivotLocation = Actor->GetPackage()->PivotCache->GetBodyInstance()->GetPosition();
 	Actor->GetBodyInstance()->SetTransform(PivotLocation, Actor->GetBodyInstance()->GetAngle());
@@ -498,12 +471,19 @@ void Application::WheelTick(b2Actor2D* Actor)
 
 void Application::BallTick(b2Actor2D* Actor)
 {
-	if (!Actor) return;
-	if (!Actor->GetPackage()->GameState.GetIsGameStarted()) return;
+	if (!Actor)
+	{
+		return;
+	}
 
-	const bool Ax = Actor->GetLocation().x >= Actor->GetPackage()->RenderWindowData.Width + 64.0f;
+	if (!Actor->GetPackage()->GameState.GetIsGameStarted())
+	{
+		return;
+	}
+
+	const bool Ax = Actor->GetLocation().x >= Actor->GetPackage()->m_AppWindowData.Width + 64.0f;
 	const bool Bx = Actor->GetLocation().x <= -64.0f;
-	const bool Ay = Actor->GetLocation().y >= Actor->GetPackage()->RenderWindowData.Height + 64.0f;
+	const bool Ay = Actor->GetLocation().y >= Actor->GetPackage()->m_AppWindowData.Height + 64.0f;
 	const bool By = Actor->GetLocation().y <= -64.0f;
 
 	if (Ax || Bx || Ay || By)
@@ -514,7 +494,10 @@ void Application::BallTick(b2Actor2D* Actor)
 
 void Application::SensorOverlap(b2Actor2D* OverlapActor)
 {
-	if (!OverlapActor->GetPackage()->GameState.GetIsGameStarted()) return;
+	if (!OverlapActor->GetPackage()->GameState.GetIsGameStarted())
+	{
+		return;
+	}
 
 	if (OverlapActor->GetObjectName() == "Ball")
 	{

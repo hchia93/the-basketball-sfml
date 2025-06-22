@@ -29,8 +29,7 @@ set(SOURCES
     src/Private/b2Actor2D.cpp
     src/Private/b2Actor2DContactListener.cpp
     src/Private/GameState.cpp
-    src/Private/TextRenderer.cpp
-    src/Private/TickHandle.cpp
+    src/Private/TextProcessor.cpp
 )
 
 set(HEADERS
@@ -41,12 +40,20 @@ set(HEADERS
     src/Public/Defines.h
     src/Public/GameState.h
     src/Public/Interface.h
-    src/Public/TextRenderer.h
-    src/Public/TickHandle.h
+    src/Public/TextProcessor.h
 )
 
 # Create executable
-add_executable(BasketballSFML ${SOURCES} ${HEADERS})
+add_executable(BasketballSFML
+    src/Public/Application.h
+    src/Public/AssetLoader.h
+    src/Public/b2Actor2D.h
+    src/Public/b2Actor2DContactListener.h
+    src/Public/Defines.h
+    src/Public/GameState.h
+    src/Public/Interface.h
+    src/Public/TextProcessor.h
+)
 
 # Include directories
 target_include_directories(BasketballSFML PRIVATE 
@@ -88,7 +95,13 @@ add_custom_command(TARGET BasketballSFML POST_BUILD
 
 if(WIN32)
     target_sources(BasketballSFML PRIVATE
-        src/Private/Main.cpp
+        src/Private/main.cpp
+        src/Private/Application.cpp
+        src/Private/AssetLoader.cpp
+        src/Private/b2Actor2D.cpp
+        src/Private/b2Actor2DContactListener.cpp
+        src/Private/GameState.cpp
+        src/Private/TextProcessor.cpp
     )
     set_property(TARGET BasketballSFML PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:BasketballSFML>")
 endif()
