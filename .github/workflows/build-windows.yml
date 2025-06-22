@@ -21,7 +21,6 @@ jobs:
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgGitCommitId: '2024.01.12'
         vcpkgDirectory: '${{ github.workspace }}/vcpkg_installed'
         
     - name: Install vcpkg dependencies
