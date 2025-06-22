@@ -1,0 +1,55 @@
+name: CI Windows
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        config: [Debug, Release]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '2024.01.12'
+        vcpkgDirectory: '${{ github.workspace }}/vcpkg_installed'
+        
+    - name: Install vcpkg dependencies
+      run: |
+        vcpkg install sfml:x64-windows
+        vcpkg install box2d:x64-windows
+        
+    - name: Configure CMake
+      run: |
+        cmake -B ${{github.workspace}}/build -S ${{github.workspace}} -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg_installed/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+        
+    - name: Build
+      run: |
+        cmake --build ${{github.workspace}}/build --config ${{ matrix.config }} --parallel
+        
+    - name: Test build output
+      run: |
+        if (Test-Path "${{github.workspace}}/build/${{ matrix.config }}/BasketballSFML.exe") {
+          Write-Host "✅ Build successful: BasketballSFML.exe found"
+        } else {
+          Write-Host "❌ Build failed: BasketballSFML.exe not found"
+          exit 1
+        }
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: matrix.config == 'Release'
+      with:
+        name: BasketballSFML-Windows-Release
+        path: ${{github.workspace}}/build/Release/BasketballSFML.exe
+        retention-days: 30 

@@ -1,20 +1,46 @@
- $ cat .gitignore
-/*
-/Build
-/Intermediate
-!/Source
-!/Resources
-!/Box2D
+# Build directories
+Build/
+Intermediate/
+generated-vs/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+
+# vcpkg installed packages
+vcpkg_installed/
+
+# Binaries and build artifacts
 *.pdb
 *.o
 *.obj
 *.log
-!*.vcxproj
-!*.filters
-!*.user
-!*.sln
-!*.dll
-!*.lib
-!.gitattributes
-!.gitignore
-!LICENSE
+*.dll
+*.lib
+*.exe
+*.app
+*.out
+*.a
+*.so
+*.dylib
+
+# IDE files
+.vs/
+.vscode/
+*.vcxproj.user
+*.vcxproj.filters
+*.sln.docstates
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
