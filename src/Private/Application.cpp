@@ -467,8 +467,10 @@ void Application::SpawnBall()
 
 void Application::PivotTick(b2Actor2D* Actor)
 {
-	if (!Actor) return;
-	//if (!Actor->GetPackage()->GameState.GetIsGameStarted()) return;
+	if (!Actor)
+	{
+		return;
+	} 
 
 	const float ElapsedTime = Actor->GetPackage()->GetTickHandle().GetElapsedTime();
 	const float deltaY = 3.0f * cosf(ElapsedTime) / 32.0f;
@@ -478,17 +480,26 @@ void Application::PivotTick(b2Actor2D* Actor)
 
 void Application::WheelTick(b2Actor2D* Actor)
 {
-	if (!Actor) return;
-	//if (!Actor->GetPackage()->GameState.GetIsGameStarted()) return;
-
+	if (!Actor) 
+	{
+		return;
+	}
+	
 	b2Vec2 PivotLocation = Actor->GetPackage()->PivotCache->GetBodyInstance()->GetPosition();
 	Actor->GetBodyInstance()->SetTransform(PivotLocation, Actor->GetBodyInstance()->GetAngle());
 }
 
 void Application::BallTick(b2Actor2D* Actor)
 {
-	if (!Actor) return;
-	if (!Actor->GetPackage()->GameState.GetIsGameStarted()) return;
+	if (!Actor) 
+	{
+		return;
+	}
+
+	if (!Actor->GetPackage()->GameState.GetIsGameStarted())
+	{
+		return;
+	}
 
 	const bool Ax = Actor->GetLocation().x >= Actor->GetPackage()->RenderWindowData.Width + 64.0f;
 	const bool Bx = Actor->GetLocation().x <= -64.0f;

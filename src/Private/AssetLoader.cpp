@@ -2,10 +2,13 @@
 
 FAssetLoader::~FAssetLoader() 
 {
-	for (auto& i : MusicLibrary)
+	for (auto&& element : m_MusicMap)
 	{
-		if (!i.second.get()) continue;
-			i.second.get()->stop();
+		if (!element.second.get())
+		{
+			continue;
+		} 
+		element.second.get()->stop();
 	}
 }
 
@@ -28,24 +31,24 @@ SFML::Texture* FAssetLoader::FindTexture(FAssetLoader* ContextObject, const std:
 {
 	if (!ContextObject) return nullptr;
 
-	auto Iterator = ContextObject->TextureLibrary.find(Name);
-	return (Iterator != ContextObject->TextureLibrary.end()) ? Iterator->second.get() : nullptr ;
+	auto Iterator = ContextObject->m_TextureMap.find(Name);
+	return (Iterator != ContextObject->m_TextureMap.end()) ? Iterator->second.get() : nullptr ;
 }
 
 SFML::Font* FAssetLoader::FindFont(FAssetLoader* ContextObject, const std::string Name)
 {
 	if (!ContextObject) return nullptr;
 
-	auto Iterator = ContextObject->FontLibrary.find(Name);
-	return (Iterator != ContextObject->FontLibrary.end()) ? Iterator->second.get() : nullptr;
+	auto Iterator = ContextObject->m_FontMap.find(Name);
+	return (Iterator != ContextObject->m_FontMap.end()) ? Iterator->second.get() : nullptr;
 }
 
 SFML::Music* FAssetLoader::FindMusic(FAssetLoader* ContextObject, const std::string Name)
 {
 	if (!ContextObject) return nullptr;
 
-	auto Iterator = ContextObject->MusicLibrary.find(Name);
-	return (Iterator != ContextObject->MusicLibrary.end()) ? Iterator->second.get() : nullptr;
+	auto Iterator = ContextObject->m_MusicMap.find(Name);
+	return (Iterator != ContextObject->m_MusicMap.end()) ? Iterator->second.get() : nullptr;
 }
 
 bool FAssetLoader::LoadTexture(const std::string FileName)
@@ -56,7 +59,7 @@ bool FAssetLoader::LoadTexture(const std::string FileName)
 
 	if (bResult)
 	{
-		TextureLibrary.insert(std::pair<const std::string, std::unique_ptr<SFML::Texture>>(FileName, std::move(pNewTexture)));
+		m_TextureMap.insert(std::pair<const std::string, std::unique_ptr<SFML::Texture>>(FileName, std::move(pNewTexture)));
 	}
 	return bResult;
 }
@@ -69,7 +72,7 @@ bool FAssetLoader::LoadFont(const std::string FileName)
 	
 	if (bResult)
 	{
-		FontLibrary.insert(std::pair<const std::string, std::unique_ptr<SFML::Font>>(FileName, std::move(pNewFont)));
+		m_FontMap.insert(std::pair<const std::string, std::unique_ptr<SFML::Font>>(FileName, std::move(pNewFont)));
 	}
 	return bResult;
 }
@@ -82,7 +85,7 @@ bool FAssetLoader::LoadMusic(const std::string FileName)
 
 	if (bResult)
 	{
-		MusicLibrary.insert(std::pair<const std::string, std::unique_ptr<SFML::Music>>(FileName, std::move(pNewMusic)));
+		m_MusicMap.insert(std::pair<const std::string, std::unique_ptr<SFML::Music>>(FileName, std::move(pNewMusic)));
 	}
 	return bResult;
 }

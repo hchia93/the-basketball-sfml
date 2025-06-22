@@ -7,6 +7,9 @@ CMakeCache.txt
 Makefile
 cmake_install.cmake
 
+# vcpkg installed packages
+vcpkg_installed/
+
 # Binaries and build artifacts
 *.pdb
 *.o

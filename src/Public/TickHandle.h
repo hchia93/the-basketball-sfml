@@ -9,7 +9,6 @@ class Application;
 class FTickHandle : public ITickable
 {
 public:
-	FTickHandle();
 	~FTickHandle();
 
 	/* 

@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
+
+# Enable vcpkg manifest mode. This MUST be set before the project() command.
+set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+
 project(BasketballSFML VERSION 1.0.0 LANGUAGES CXX)
 
 # Set C++ standard
@@ -29,11 +33,11 @@ target_include_directories(BasketballSFML PRIVATE src/Public)
 
 # Link libraries
 target_link_libraries(BasketballSFML PRIVATE 
-    SFML-Graphics 
-    SFML-Window 
-    SFML-System 
-    SFML-Audio
-    box2d
+    SFML::Graphics 
+    SFML::Window 
+    SFML::System 
+    SFML::Audio
+    box2d::box2d
 )
 
 # Copy resources to build directory
@@ -43,16 +47,3 @@ file(COPY resource DESTINATION ${CMAKE_BINARY_DIR})
 set_target_properties(BasketballSFML PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
 )
-
-# Windows-specific settings
-if(WIN32)
-    # Copy SFML DLLs to output directory
-    add_custom_command(TARGET BasketballSFML POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:sfml-graphics>
-        $<TARGET_FILE:sfml-window>
-        $<TARGET_FILE:sfml-system>
-        $<TARGET_FILE:sfml-audio>
-        $<TARGET_FILE_DIR:BasketballSFML>
-    )
-endif() 

@@ -4,35 +4,21 @@ The Basketball was one of my university projects. The goal of this project is to
 
 
 ## Prerequisites
+To build and run this project, external dependencies are required. The `DependencyInstaller.bat` script will install them accordingly.
 
 | Dependency | Version | Source |
 |------------|---------|--------|
-| SFML       | 2.5+    | https://www.sfml-dev.org/ |
-| Box2D      | 2.4+    | https://github.com/erincatto/box2d |
-| CMake      | 4.0.3+  | https://cmake.org/ |
-| Visual Studio | 2019+ | https://visualstudio.microsoft.com/ |
-
-> **Note:** CMake must be installed and available in your PATH (so you can run `cmake` from any command line). If you install CMake from https://cmake.org/download/, make sure to check the option to add CMake to your system PATH during installation.
-
-## Project Setup
-### Step 1: Install Dependencies
-Run `SetupEnvironment.bat` to install `SFML` and `Box2D` dependencies. They should be installed at `C:\vcpkg\packages`
-
-> **Note**: If you haven't installed `vcpkg` yet, please follow the [Installation Guide: vcpkg](https://github.com/hchia93/hchia93/blob/main/vcpkg-README.md) first.
-
-### Step 2: Generate Visual Studio Solutions
-Run `GenerateVisualStudioSolutions.bat` to generate Visual Studio solutions in the `generated-vs` directory.
-
-### Step 3: Set the Startup Project in Visual Studio
-After opening the generated solution in Visual Studio, **right-click on the project (e.g., `BasketballSFML`) in the Solution Explorer and select "Set as Startup Project"**. This ensures that pressing F5 or "Start" will launch the correct executable.
+| SFML       | 2.6.1   | https://www.sfml-dev.org/          |
+| Box2D      | 2.4.1   | https://github.com/erincatto/box2d |
 
 ## Project Structure
 
 ```
 the-basketball-sfml/
 ├── CMakeLists.txt                     #cmake-build
-├── SetupEnvironment.bat               #instaling dependencies
-├── GenerateVisualStudioSolutions.bat  #generate vs solution
+├── vcpkg.json                         #vcpkg manifest (dependencies)
+├── DependencyInstaller.bat            #installing dependencies
+├── VisualStudioSolutionGenerator.bat  #generate vs solution
 ├── README.md                          
 ├── src/                               #code
 │   ├── Public/                        #headers files
@@ -40,3 +26,34 @@ the-basketball-sfml/
 ├── resource/                          #assets
 └── generated-vs/                      #generated content
 ```
+
+## Instruction
+### Step 1: Installs Required Dependencies
+
+Execute the following file to install relevant dependencies:
+
+```cmd
+DependencyInstaller.bat
+```
+
+### Step 2: Generates the Visual Studio Solution
+
+Next, generate the Visual Studio Solution via the script. This creates the `generated-vs` directory.
+
+```cmd
+VisualStudioSolutionGenerator.bat
+```
+
+### Step 3: Build and Run
+
+Open the generated solution located at:
+- **`generated-vs/vulkan-tutorial-triangle.sln`**
+
+Press **F5** to build and run the application.
+
+> **⚠️ Important First-Time Setup**
+> The first time you open the solution, you may need to manually set the startup project.
+> 1. In the **Solution Explorer**, **right-click** on `vulkan-tutorial-triangle`.
+> 2. Select **"Set as StartUp Project"** from the menu.
+>
+> You only need to do this once.

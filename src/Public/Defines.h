@@ -19,13 +19,13 @@
 
 
 // Resources Path Defines.
-#define RESOURCES_FONT_CHALK				"Resources/RightChalk.ttf"
+#define RESOURCES_FONT_CHALK				"Resources/rightChalk.ttf"
 #define RESOURCES_FONT_PIXEL				"Resources/04b03.ttf"
 #define RESOURCES_TEXTURE_CHALKBOARD		"Resources/chalkboard.jpg"
 #define RESOURCES_TEXTURE_BASKETBALL		"Resources/basketBall.png"
 #define RESOURCES_TEXTURE_BASKETBALLBOARD	"Resources/basketBallBoard.png"
-#define RESOURCES_TEXTURE_BACKGROUND		"Resources/Background.jpg"
+#define RESOURCES_TEXTURE_BACKGROUND		"Resources/background.jpg"
 #define RESOURCES_TEXTURE_WOOD				"Resources/wood.jpg"
 #define RESOURCES_TEXTURE_BOXALT			"Resources/boxAlt.png"
-#define RESOURCES_AUDIO_TROLOLO				"Resources/Mr.ogg"
+#define RESOURCES_AUDIO_TROLOLO				"Resources/mr.ogg"
 

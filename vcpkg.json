@@ -1,0 +1,14 @@
+{
+  "name": "the-basketball-sfml",
+  "version": "1.0.0",
+  "description": "A basketball game built with SFML and Box2D",
+  "homepage": "https://github.com/your-username/the-basketball-sfml",
+  "dependencies": [
+    {
+      "name": "sfml",
+      "features": ["audio", "graphics", "window"]
+    },
+    "box2d"
+  ],
+  "builtin-baseline": "0cf34c184ce990471435b5b9c92edcf7424930b1"
+} 

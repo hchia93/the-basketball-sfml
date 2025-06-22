@@ -1,12 +1,7 @@
-#include <Box2D/Box2D.h>
+#include <box2d/box2d.h>
 #include "TickHandle.h"
 #include "Application.h"
 
-
-FTickHandle::FTickHandle()
-{
-
-}
 
 FTickHandle::~FTickHandle()
 {
