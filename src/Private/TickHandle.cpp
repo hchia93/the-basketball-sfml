@@ -1,16 +1,22 @@
+#include <Box2D/Box2D.h>
 #include "TickHandle.h"
 #include "Application.h"
-#include "box2d/box2d.h"
+
+
+FTickHandle::FTickHandle()
+{
+
+}
 
 FTickHandle::~FTickHandle()
 {
 	LOG("Destructing TickHandle.\n");
 }
 
-bool FTickHandle::BindApplication(Application* object)
+bool FTickHandle::BindApplication(Application* Object)
 {
-	m_ContextObject = object;
-	return m_ContextObject != nullptr;
+	ContextObject = Object;
+	return ContextObject != nullptr;
 }
 
 void FTickHandle::BeginTick()
@@ -20,45 +26,31 @@ void FTickHandle::BeginTick()
 
 void FTickHandle::Tick()
 {
-	if (!m_ContextObject)
+	if (!ContextObject)
 	{
 		return;
 	}
 
-	if (!m_ContextObject->GetWorld())
+	if (!ContextObject->GetWorld())
 	{
 		return;
 	}
-
-	m_TimeElapsedSinceLastFrame += m_FixedUpdateClock.restart().asSeconds();
-	if (m_TimeElapsedSinceLastFrame >= DELTA_TIME_STEP)
+	
+	TimeElapsedSinceLastFrame += FixedUpdateClock.restart().asSeconds();
+	if (TimeElapsedSinceLastFrame >= DELTA_TIME_STEP)
 	{
 		// Step is used to update physics position/rotation
-		m_ContextObject->GetWorld()->Step(
-			DELTA_TIME_STEP, //update frequency
-			8, //velocityIterations
-			3 //positionIterations  
-		);
+		ContextObject->GetWorld()->Step(DELTA_TIME_STEP, 8, 3);
 
-		m_ContextObject->Tick(DELTA_TIME_STEP);
-		m_TimeElapsedSinceLastFrame -= DELTA_TIME_STEP;
+		ContextObject->Tick(DELTA_TIME_STEP);
+		TimeElapsedSinceLastFrame -= DELTA_TIME_STEP;
 
-		m_ElapsedTime += DELTA_TIME_STEP;
+		ElapsedTime += DELTA_TIME_STEP;
 	}
 }
 
 void FTickHandle::EndTick()
 {
 	// Remove context, but do not delete as the application would delete else where.
-	m_ContextObject = nullptr;
-}
-
-float FTickHandle::GetElapsedTime() const
-{
-	return m_ElapsedTime;
-}
-
-void FTickHandle::ClearTimer()
-{
-	m_ElapsedTime = 0.0f;
+	ContextObject = nullptr;
 }

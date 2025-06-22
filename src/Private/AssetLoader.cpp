@@ -1,13 +1,24 @@
 #include "AssetLoader.h"
+#include "Defines.h"
+#include <iostream>
+#include <fstream>
+#include <vector>
 
-FAssetLoader::~FAssetLoader()
+FAssetLoader::~FAssetLoader() 
 {
+	for (auto&& element : m_TextureMap)
+	{
+		element.second.reset();
+	}
+
+	for (auto&& element : m_FrontMap)
+	{
+		element.second.reset();
+	}
+
 	for (auto&& element : m_MusicMap)
 	{
-		if (element.second.get())
-		{
-			element.second.get()->stop();
-		}
+		element.second.reset();
 	}
 }
 
@@ -26,86 +37,59 @@ bool FAssetLoader::LoadResources()
 	return bResult;
 }
 
-sf::Texture* FAssetLoader::FindTexture(FAssetLoader* contextObject, const std::string name)
+sf::Texture* FAssetLoader::FindTexture(const std::string fileName)
 {
-	if (!contextObject)
-	{
-		return nullptr;
-	}
-
-	auto iterator = contextObject->m_TextureMap.find(name);
-	if (iterator != contextObject->m_TextureMap.end())
-	{
-		return iterator->second.get();
-	}
-	return nullptr;
+	auto it = m_TextureMap.find(fileName);
+	return (it != m_TextureMap.end()) ? it->second.get() : nullptr ;
 }
 
-sf::Font* FAssetLoader::FindFont(FAssetLoader* contextObject, const std::string name)
+sf::Font* FAssetLoader::FindFont(const std::string fileName)
 {
-	if (!contextObject)
-	{
-		return nullptr;
-	}
-
-	auto iterator = contextObject->m_FontMap.find(name);
-	if (iterator != contextObject->m_FontMap.end())
-	{
-		return iterator->second.get();
-	}
-	return nullptr;
+	auto it = m_FrontMap.find(fileName);
+	return (it != m_FrontMap.end()) ? it->second.get() : nullptr;
 }
 
-sf::Music* FAssetLoader::FindMusic(FAssetLoader* contextObject, const std::string name)
+sf::Music* FAssetLoader::FindMusic(const std::string fileName)
 {
-	if (!contextObject)
-	{
-		return nullptr;
-	}
-
-	auto iterator = contextObject->m_MusicMap.find(name);
-	if (iterator != contextObject->m_MusicMap.end())
-	{
-		return iterator->second.get();
-	}
-	return nullptr;
+	auto it = m_MusicMap.find(fileName);
+	return (it != m_MusicMap.end()) ? it->second.get() : nullptr;
 }
 
-bool FAssetLoader::LoadTexture(const std::string filename)
+bool FAssetLoader::LoadTexture(const std::string& filename)
 {
-	auto pNewTexture = std::make_unique<sf::Texture>();
+	std::unique_ptr<sf::Texture> pNewTexture  = std::make_unique<sf::Texture>();
 	bool bResult = pNewTexture->loadFromFile(filename);
 	LOAD_CHECK(bResult, filename);
 
 	if (bResult)
 	{
-		m_TextureMap.insert(std::make_pair(filename, std::move(pNewTexture)));
+		m_TextureMap.insert(std::pair<const std::string, std::unique_ptr<sf::Texture>>(filename, std::move(pNewTexture)));
 	}
 	return bResult;
 }
 
-bool FAssetLoader::LoadFont(const std::string filename)
+bool FAssetLoader::LoadFont(const std::string& filename)
 {
 	auto pNewFont = std::make_unique<sf::Font>();
-	bool bResult = pNewFont->loadFromFile(filename);
+	bool bResult = pNewFont->openFromFile(filename);
 	LOAD_CHECK(bResult, filename);
 
 	if (bResult)
 	{
-		m_FontMap.insert(std::make_pair(filename, std::move(pNewFont)));
+		m_FrontMap.insert(std::pair<const std::string, std::unique_ptr<sf::Font>>(filename, std::move(pNewFont)));
 	}
 	return bResult;
 }
 
-bool FAssetLoader::LoadMusic(const std::string filename)
+bool FAssetLoader::LoadMusic(const std::string& filename)
 {
-	auto pNewMusic = std::make_unique<sf::Music>();
+	std::unique_ptr<sf::Music> pNewMusic = std::make_unique<sf::Music>();
 	bool bResult = pNewMusic->openFromFile(filename);
 	LOAD_CHECK(bResult, filename);
 
 	if (bResult)
 	{
-		m_MusicMap.insert(std::make_pair(filename, std::move(pNewMusic)));
+		m_MusicMap.insert(std::pair<const std::string, std::unique_ptr<sf::Music>>(filename, std::move(pNewMusic)));
 	}
 	return bResult;
 }

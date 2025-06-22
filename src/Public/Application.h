@@ -2,7 +2,10 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
-#include <box2d/box2d.h>
+#include <Box2D/Box2D.h>
+#include <string>
+#include <vector>
+#include <memory>
 #include "TickHandle.h"
 #include "AssetLoader.h"
 #include "GameState.h"
@@ -14,14 +17,13 @@ class b2Actor2DContactListener;
 
 struct FRenderWindowData
 {
-	int m_Width = 1000;
-	int m_Height = 728;
-	int m_BitsPerPixel;
+	unsigned int Width = 1000;
+	unsigned int Height = 728;
 	
-	std::string m_WindowName = "BasketBallSimulator";
+	std::string WindowName = "BasketBallSimulator";
 
-	sf::VideoMode GetVideoModeFromData()	{	return sf::VideoMode(m_Width, m_Height, m_BitsPerPixel);	}
-	std::string GetWindowName()			{	return m_WindowName;	}
+	sf::VideoMode GetVideoModeFromData() { return sf::VideoMode({Width, Height}); }
+	const std::string& GetWindowName() { return WindowName; }
 };
 
 class Application
@@ -32,66 +34,66 @@ public:
 
 	int Initialize();
 	void BeginPlay();
-	void Tick(const float deltaTime);
+	void Tick(const float DeltaTime);
 	void EndPlay();
 
-	b2World* GetWorld() const { return m_World.get(); }
-	FTickHandle& GetTickHandle() { return m_TickHandle;  }
-	sf::RenderWindow* GetWindow() { return &m_AppWindow; }
+	b2World* GetWorld() const { return World.get(); }
+	FTickHandle& GetTickHandle() { return TickHandle;  }
+	sf::RenderWindow* GetWindow() { return &AppWindow; }
 
 private:
 
-	static void PivotTick(b2Actor2D* actor);
-	static void WheelTick(b2Actor2D* actor);
-	static void BallTick(b2Actor2D* actor);
-	static void SensorOverlap(b2Actor2D* overlapActor);
+	static void PivotTick(b2Actor2D* Actor);
+	static void WheelTick(b2Actor2D* Actor);
+	static void BallTick(b2Actor2D* Actor);
+	static void SensorOverlap(b2Actor2D* OverlapActor);
 
 	void MakeTrack();
 	void MakeProjector();
 	void SetupText();
 	void SpawnBall();
 
-	FTickHandle m_TickHandle;
+	FTickHandle TickHandle;
 	FAssetLoader m_AssetLoader;
-	FGameState m_GameState;
-	FTextRenderer m_TextRenderer;
+	FGameState GameState;
+	FTextRenderer TextRenderer;
 
-	FRenderWindowData m_RenderWindowData;
-	sf::RenderWindow m_AppWindow;
+	FRenderWindowData RenderWindowData;
+	sf::RenderWindow AppWindow;
 
-	sf::Music* m_BGM;
+	sf::Music* BGM;
 	
 	//Box2D
-	b2Vec2 m_Gravity; 
-	std::shared_ptr<b2World> m_World;
-	std::unique_ptr<b2Actor2DContactListener> m_b2ActorContactListner;
+	b2Vec2 Gravity; 
+	std::shared_ptr<b2World> World;
+	std::unique_ptr<b2Actor2DContactListener> b2ActorContactListner;
 
-	std::vector<std::unique_ptr<sf::Shape>> m_RenderShapes;
-	std::vector<std::unique_ptr<b2Actor2D>> m_b2Actors;
-	std::vector<std::unique_ptr<b2Actor2D>> m_Balls;
+	std::vector<std::unique_ptr<sf::Shape>> RenderShapes;
+	std::vector<std::unique_ptr<b2Actor2D>> b2Actors;
+	std::vector<std::unique_ptr<b2Actor2D>> Balls;
 
-	sf::Vertex m_AngleIndicators[2];
+	sf::Vertex AngleIndicators[2];
 
-	bool m_bRightMousePressed = false;
-	bool m_bMiddleMousePressed = false;
+	bool bRightMousePressed = false;
+	bool bMiddleMousePressed = false;
 
 	//////////////////////////////////////////
 	//		Cached Pointers
 	//////////////////////////////////////////
 
-	sf::RectangleShape* m_ChargeGaugeMax;		// Cached pointer, no need clear. Cleared via m_RenderShapes.
-	sf::RectangleShape* m_ChargeGaugeProgress;	// Cached pointer, no need clear. Cleared via m_RenderShapes.
+	sf::RectangleShape* ChargeGaugeMax;		// Cached pointer, no need clear. Cleared via RenderShapes.
+	sf::RectangleShape* ChargeGaugeProgress;	// Cached pointer, no need clear. Cleared via RenderShapes.
 
-	b2Actor2D* m_PivotCache;		// Cached pointer, no need clear. Cleared via m_b2Actors.
-	b2Actor2D* m_WheelCache;		// Cached pointer, no need clear. Cleared via m_b2Actors.
+	b2Actor2D* PivotCache;		// Cached pointer, no need clear. Cleared via b2Actors.
+	b2Actor2D* WheelCache;		// Cached pointer, no need clear. Cleared via b2Actors.
 
-	FTextData* m_LevelTextCache;
-	FTextData* m_ScoreCache;
-	FTextData* m_HiScoreCache;
-	FTextData* m_BallCountCache;
-	FTextData* m_CountdownTimeCache;
-	FTextData* m_ElapsedTimeCache;
-	FTextData* m_CenterTextCache;
+	FTextData* LevelTextCache;
+	FTextData* ScoreCache;
+	FTextData* HiScoreCache;
+	FTextData* BallCountCache;
+	FTextData* CountdownTimeCache;
+	FTextData* ElapsedTimeCache;
+	FTextData* CenterTextCache;
 
 	
 };

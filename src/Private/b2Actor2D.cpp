@@ -2,75 +2,69 @@
 #include "Application.h"
 
 
-b2Actor2D::b2Actor2D(Application* package, b2World* worldContext, const std::string name, EActorShapeType shapeType, const Eb2ShapeType bodyType, sf::Vector2f size, sf::Vector2f location, const float rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
+b2Actor2D::b2Actor2D(Application* Package, b2World* WorldContext, const std::string Name, EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size, sf::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
 {
-	Construct(package, worldContext, name, shapeType, bodyType, size, location, rotation, bIsDynamicBody, bGenerateOverlaps, bAutoActivate);
+	Construct(Package, WorldContext, Name, ShapeType, BodyType, Size, Location, Rotation, bIsDynamicBody, bGenerateOverlaps, bAutoActivate);
 }
 
-b2Actor2D::b2Actor2D(const Fb2ActorSpawnParam spawnParam)
-{
-	Construct(spawnParam.m_Package, spawnParam.m_WorldContext, spawnParam.m_Name, spawnParam.m_ShapeType, spawnParam.m_BodyType,
-		spawnParam.m_Size, spawnParam.m_Location, spawnParam.m_Rotation, spawnParam.m_bIsDynamicBody, spawnParam.m_bGenerateOverlaps, spawnParam.m_bAutoActivate);
+b2Actor2D::b2Actor2D(const Fb2ActorSpawnParam SpawnParam)
+{	
+	Construct(SpawnParam.Package, SpawnParam.WorldContext, SpawnParam.Name, SpawnParam.ShapeType, SpawnParam.BodyType, 
+		SpawnParam.Size, SpawnParam.Location, SpawnParam.Rotation, SpawnParam.bIsDynamicBody, SpawnParam.bGenerateOverlaps, SpawnParam.bAutoActivate);
 }
 
-b2Actor2D::~b2Actor2D()
+b2Actor2D::~b2Actor2D() 
 {
 }
 
-void b2Actor2D::Construct(Application* package, b2World* worldContext, const std::string name, const EActorShapeType shapeType, const Eb2ShapeType bodyType, sf::Vector2f size, sf::Vector2f location, const float rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
+void b2Actor2D::Construct(Application * Package, b2World * WorldContext, const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size, sf::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
 {
-	if (!package)
-	{
-		return;
-	}
-	if (!worldContext)
-	{
-		return;
-	}
+	if (!Package) return;
+	if (!WorldContext) return;
 
-	this->m_Package = package;
+	this->Package = Package;
 
-	m_ObjectName = name;
-	m_ObjectShapes.m_ShapeType = shapeType;
-	m_CollisionType = bodyType;
+	ObjectName = Name;
+	ObjectShapes.ShapeType = ShapeType;
+	CollisionType = BodyType;
 
-	MakeShapeInstance(shapeType);
-	m_ObjectShapeCache = m_ObjectShapes.Get();
-	SetShapeProperties(shapeType, size);
-	if (m_ObjectShapes.Get())
+	MakeShapeInstance(ShapeType);
+	ObjectShapeCache = ObjectShapes.Get();
+	SetShapeProperties(ShapeType, Size);
+	if (ObjectShapes.Get())
 	{
-		m_ObjectShapes.Get()->setOrigin(size * 0.5f);
-		m_ObjectShapes.Get()->setFillColor(sf::Color(128, 128, 128, 255));
-		m_ObjectShapes.Get()->setOutlineThickness(1);
-		m_ObjectShapes.Get()->setOutlineColor(sf::Color::Black);
+		ObjectShapes.Get()->setOrigin(Size * 0.5f);
+		ObjectShapes.Get()->setFillColor(sf::Color(128, 128, 128, 255));
+		ObjectShapes.Get()->setOutlineThickness(1);
+		ObjectShapes.Get()->setOutlineColor(sf::Color::Black);
 	}
 
-	m_BodyDefinition = std::make_unique<b2BodyDef>();
-	m_BodyDefinition->position = b2Vec2(location.x / PIXEL_PER_METER, location.y / PIXEL_PER_METER);
-	m_BodyDefinition->type = bIsDynamicBody ? b2_dynamicBody : b2_staticBody;
+	BodyDefinition = std::make_unique<b2BodyDef>();
+	BodyDefinition->position = b2Vec2(Location.x / PIXEL_PER_METER, Location.y / PIXEL_PER_METER);
+	BodyDefinition->type = bIsDynamicBody ? b2_dynamicBody : b2_staticBody;
 
-	m_InitialPosition = b2Vec2(location.x / PIXEL_PER_METER, location.y / PIXEL_PER_METER);
-	m_InitialRotation = rotation;
+	InitialPosition = b2Vec2(Location.x / PIXEL_PER_METER, Location.y / PIXEL_PER_METER);
+	InitialRotation = Rotation;
 
-	MakeB2ShapeInstance(bodyType);
-	SetB2ShapeProperties(bodyType, size);
+	MakeB2ShapeInstance(BodyType);
+	SetB2ShapeProperties(BodyType, Size);
 
-	if (m_BodyShape)
+	if (BodyShape)
 	{
-		m_FixtureDefinition = std::make_unique<b2FixtureDef>();
-		m_FixtureDefinition->shape = m_BodyShape.get();
-		m_FixtureDefinition->density = 0.5f;
-		m_FixtureDefinition->friction = 0.5f;
-		m_FixtureDefinition->restitution = 0.5f;
-		m_FixtureDefinition->isSensor = bGenerateOverlaps; // change it to MakeSensor and get data.
+		FixtureDefinition = std::make_unique<b2FixtureDef>();
+		FixtureDefinition->shape = BodyShape.get();
+		FixtureDefinition->density = 0.5f;
+		FixtureDefinition->friction = 0.5f;
+		FixtureDefinition->restitution = 0.5f;
+		FixtureDefinition->isSensor = bGenerateOverlaps; // change it to MakeSensor and get data.
 	}
 
-	m_BodyInstance = worldContext->CreateBody(m_BodyDefinition.get());
-	m_BodyInstance->CreateFixture(m_FixtureDefinition.get());
-	m_BodyInstance->SetUserData(this);
+	BodyInstance = WorldContext->CreateBody(BodyDefinition.get());
+	BodyInstance->CreateFixture(FixtureDefinition.get());
+	BodyInstance->GetUserData().pointer = reinterpret_cast<uintptr_t>(this);
 
-	this->m_bGenerateOverlaps = bGenerateOverlaps;
-	m_bIsDynamicObject = bIsDynamicBody;
+	this->bGenerateOverlaps = bGenerateOverlaps;
+	bIsDynamicObject = bIsDynamicBody;
 
 	if (bAutoActivate)
 	{
@@ -78,26 +72,27 @@ void b2Actor2D::Construct(Application* package, b2World* worldContext, const std
 	}
 
 	// Debug!
-	m_DebugForward = std::make_unique<sf::RectangleShape>();
-	m_DebugForward->setOrigin(size * 0.5f);
-	m_DebugForward->setSize(sf::Vector2f(size.x + 20.0f, 5));
-	m_DebugForward->setFillColor(sf::Color(255, 0, 0, 255));
+	DebugForward = std::make_unique<sf::RectangleShape>();
+	DebugForward->setOrigin(Size * 0.5f);
+	DebugForward->setSize(sf::Vector2f(Size.x + 20.0f, 5));
+	DebugForward->setFillColor(sf::Color(255, 0, 0, 255));
+
 }
 
 void b2Actor2D::Tick()
 {
-	if (m_bIsActive)
+	if (bIsActive)
 	{
 		// Box2D uses radians for rotation, SFML uses degree
 		// Snap rendering according to Box2D BodyInstance.
-		m_ObjectShapes.Get()->setRotation(m_BodyInstance->GetAngle() * 180 / b2_pi);
-		m_ObjectShapes.Get()->setPosition(m_BodyInstance->GetPosition().x * PIXEL_PER_METER, m_BodyInstance->GetPosition().y * PIXEL_PER_METER);
-		m_DebugForward->setRotation(m_BodyInstance->GetAngle() * 180 / b2_pi);
-		m_DebugForward->setPosition(m_BodyInstance->GetPosition().x * PIXEL_PER_METER, m_BodyInstance->GetPosition().y * PIXEL_PER_METER);
+		ObjectShapes.Get()->setRotation(sf::degrees(BodyInstance->GetAngle() * 180 / b2_pi));
+		ObjectShapes.Get()->setPosition(sf::Vector2f(BodyInstance->GetPosition().x*PIXEL_PER_METER, BodyInstance->GetPosition().y*PIXEL_PER_METER));
+		DebugForward->setRotation(sf::degrees(BodyInstance->GetAngle() * 180 / b2_pi));
+		DebugForward->setPosition(sf::Vector2f(BodyInstance->GetPosition().x*PIXEL_PER_METER, BodyInstance->GetPosition().y*PIXEL_PER_METER));
 
-		if (m_TickCallback != nullptr)
+		if (TickCallback != 0)
 		{
-			m_TickCallback(this);
+			TickCallback(this);
 		}
 	}
 }
@@ -105,9 +100,9 @@ void b2Actor2D::Tick()
 
 void b2Actor2D::ResetToInitTransform()
 {
-	if (m_BodyInstance)
+	if (BodyInstance)
 	{
-		m_BodyInstance->SetTransform(m_InitialPosition, m_InitialRotation);
+		BodyInstance->SetTransform(InitialPosition, InitialRotation);
 	}
 	else
 	{
@@ -116,133 +111,115 @@ void b2Actor2D::ResetToInitTransform()
 	}
 }
 
-void b2Actor2D::BeginOverlap(b2Actor2D* overlappedActor)
+void b2Actor2D::BeginOverlap(b2Actor2D* OverlappedActor)
 {
-	if (m_bGenerateOverlaps && overlappedActor)
+	if (bGenerateOverlaps && OverlappedActor)
 	{
-		if (m_OnBeginOverlapCallback)
+		if (OnBeginOverlapCallback)
 		{
-			m_OnBeginOverlapCallback(overlappedActor);
+			OnBeginOverlapCallback(OverlappedActor);
 		}
 	}
 }
 
-void b2Actor2D::EndOverlap(b2Actor2D* overlappedActor)
+void b2Actor2D::EndOverlap(b2Actor2D* OverlappedActor)
 {
-	if (m_bGenerateOverlaps && overlappedActor)
+	if (bGenerateOverlaps && OverlappedActor)
 	{
-		if (m_OnEndOverlapCallback)
+		if (OnEndOverlapCallback)
 		{
-			m_OnEndOverlapCallback(overlappedActor);
+			OnEndOverlapCallback(OverlappedActor);
 		}
 	}
 }
 
-void b2Actor2D::BindOnBeginoverlap(void (*callback)(b2Actor2D* overlappedActor))
+void b2Actor2D::BindOnBeginoverlap(void (*Callback)(b2Actor2D* OverlappedActor))
 {
-	m_OnBeginOverlapCallback = callback;
+	OnBeginOverlapCallback = Callback;
 }
 
-void b2Actor2D::BindOnEndOverlap(void (*callback)(b2Actor2D* overlappedActor))
+void b2Actor2D::BindOnEndOverlap(void (*Callback)(b2Actor2D* OverlappedActor))
 {
-	m_OnEndOverlapCallback = callback;
+	OnEndOverlapCallback = Callback;
 }
 
-void b2Actor2D::BindOnTick(void (*tickFunction)(b2Actor2D* actor))
+void b2Actor2D::BindOnTick(void(*TickFunction)(b2Actor2D* Actor))
 {
-	m_TickCallback = tickFunction;
+	TickCallback = TickFunction;
 }
 
-void b2Actor2D::MakeShapeInstance(const EActorShapeType shapeType)
+void b2Actor2D::MakeShapeInstance(const EActorShapeType ShapeType)
 {
-	switch (shapeType)
+	switch (ShapeType)
 	{
-		case EActorShapeType::Rectangle:
-			m_ObjectShapes.m_RectangleShape = std::make_unique<sf::RectangleShape>();
-			break;
-		case EActorShapeType::Circle:
-			m_ObjectShapes.m_CircleShape = std::make_unique<sf::CircleShape>();
-			break;
-		case EActorShapeType::Convex:
-			m_ObjectShapes.m_ConvexShape = std::make_unique<sf::ConvexShape>();
-			break;
+		case EActorShapeType::EST_Rectangle:	ObjectShapes.RectangleShape =	std::make_unique<sf::RectangleShape>(); 		break;
+		case EActorShapeType::EST_Circle:		ObjectShapes.CircleShape	=	std::make_unique<sf::CircleShape>();			break;
+		case EActorShapeType::EST_Convex:		ObjectShapes.ConvexShape	=	std::make_unique<sf::ConvexShape>();			break;
 	}
 
 	// Prevent spawn at 0,0,0 at being visible before the first tick update.
-	m_ObjectShapes.Get()->setPosition(sf::Vector2f(-200, -200));
+	ObjectShapes.Get()->setPosition(sf::Vector2f(-200, -200));
 }
 
-void b2Actor2D::SetShapeProperties(const EActorShapeType shapeType, sf::Vector2f size)
+void b2Actor2D::SetShapeProperties(const EActorShapeType ShapeType, sf::Vector2f Size)
 {
-	if (!m_ObjectShapeCache)
+	using namespace sf;
+
+	if (!ObjectShapeCache) ObjectShapeCache = ObjectShapes.Get();
+	switch (ShapeType)
 	{
-		m_ObjectShapeCache = m_ObjectShapes.Get();
-	}
-	switch (shapeType)
-	{
-		case EActorShapeType::Circle:
-			if (sf::CircleShape* const p = dynamic_cast<sf::CircleShape*>(m_ObjectShapeCache))
+		case EActorShapeType::EST_Circle:
+			if (CircleShape* const p = dynamic_cast<CircleShape*>(ObjectShapeCache))
 			{
-				p->setRadius(size.x / 2);
+				p->setRadius(Size.x/2);
 			}
 			break;
-		case EActorShapeType::Rectangle:
-			if (sf::RectangleShape* const p = dynamic_cast<sf::RectangleShape*>(m_ObjectShapeCache))
+		case EActorShapeType::EST_Rectangle:
+			if (RectangleShape* const p = dynamic_cast<RectangleShape*>(ObjectShapeCache))
 			{
-				p->setSize(size);
+				p->setSize(Size);
 			}
 			break;
-		case EActorShapeType::Convex:
-			// Not implemented
-			break;
 	}
 }
 
-void b2Actor2D::MakeB2ShapeInstance(const Eb2ShapeType bodyType)
+void b2Actor2D::MakeB2ShapeInstance(const Eb2ShapeType BodyType)
 {
-	switch (bodyType)
+	switch (BodyType)
 	{
-		case Eb2ShapeType::Chain:
-			m_BodyShape = std::make_unique<b2ChainShape>();
-			break;
-		case Eb2ShapeType::Edge:
-			m_BodyShape = std::make_unique<b2EdgeShape>();
-			break;
-		case Eb2ShapeType::Polygon:
-			m_BodyShape = std::make_unique<b2PolygonShape>();
-			break;
-		case Eb2ShapeType::Circle:
-			m_BodyShape = std::make_unique<b2CircleShape>();
-			break;
+		case Eb2ShapeType::ECT_Chain:		BodyShape = std::make_unique<b2ChainShape>();	break;
+		case Eb2ShapeType::ECT_Edge:		BodyShape = std::make_unique<b2EdgeShape>();	break;
+		case Eb2ShapeType::ECT_Polygon:		BodyShape = std::make_unique<b2PolygonShape>(); break;
+		case Eb2ShapeType::ECT_Circle:		BodyShape = std::make_unique<b2CircleShape>();	break;
 	}
 }
 
-void b2Actor2D::SetB2ShapeProperties(const Eb2ShapeType bodyType, sf::Vector2f size)
+void b2Actor2D::SetB2ShapeProperties(const Eb2ShapeType BodyType, sf::Vector2f Size)
 {
-	if (!m_BodyShape)
+	if (!BodyShape) return;
+	switch (BodyType)
 	{
-		return;
-	}
-	switch (bodyType)
-	{
-		case Eb2ShapeType::Chain:
-		case Eb2ShapeType::Edge:
+		case Eb2ShapeType::ECT_Chain:		
+		case Eb2ShapeType::ECT_Edge:		
 			//Not supported yet.
 			break;
-		case Eb2ShapeType::Polygon:
+		case Eb2ShapeType::ECT_Polygon:	
 		{
-			if (b2PolygonShape* const p = dynamic_cast<b2PolygonShape*>(m_BodyShape.get()))
+			if(b2PolygonShape* const p = dynamic_cast<b2PolygonShape*>(BodyShape.get()))
 			{
-				p->SetAsBox((size.x * 0.5f) / PIXEL_PER_METER, (size.y * 0.5f) / PIXEL_PER_METER);
+				p->SetAsBox((Size.x * 0.5f) / PIXEL_PER_METER, (Size.y * 0.5f) / PIXEL_PER_METER);
 			}
+			
 			break;
 		}
-		case Eb2ShapeType::Circle:
+			
+		case Eb2ShapeType::ECT_Circle:		
 		{
-			if (b2CircleShape* const p = dynamic_cast<b2CircleShape*>(m_BodyShape.get()))
+			if (b2CircleShape* const p = dynamic_cast<b2CircleShape*>(BodyShape.get()))
 			{
-				p->m_radius = (size.x * 0.5f) / PIXEL_PER_METER;
+				p->m_radius = (Size.x * 0.5f) / PIXEL_PER_METER;
 			}
+
 			break;
 		}
 	}
@@ -250,19 +227,19 @@ void b2Actor2D::SetB2ShapeProperties(const Eb2ShapeType bodyType, sf::Vector2f s
 
 void b2Actor2D::Activate()
 {
-	m_bIsActive = true;
-	m_BodyInstance->SetActive(true);
-	m_BodyInstance->SetAwake(true);
+	bIsActive = true; 
+	BodyInstance->SetEnabled(true);
+	BodyInstance->SetAwake(true);
 }
 
 void b2Actor2D::MakeInactive()
 {
-	m_bIsActive = false;
+	bIsActive = false;
 	
 	// Move it out of screen.
-	BodyInstance->SetActive(false);
+	BodyInstance->SetEnabled(false);
 	BodyInstance->SetAwake(false);
 
-	ObjectShapes.Get()->setPosition(SFML::Vector2f(-200, -200));
-	DebugForward->setPosition(SFML::Vector2f(-200, -200));
+	ObjectShapes.Get()->setPosition(sf::Vector2f(-200, -200));
+	DebugForward->setPosition(sf::Vector2f(-200, -200));
 }

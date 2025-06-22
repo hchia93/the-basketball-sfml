@@ -2,27 +2,28 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <map>
-#include <string>
 #include <memory>
+#include <string>
 #include "Defines.h"
+
 
 class FAssetLoader
 {
 public:
 	~FAssetLoader();
 	bool LoadResources();
-	static sf::Texture* FindTexture(FAssetLoader* contextObject, const std::string name);
-	static sf::Font* FindFont(FAssetLoader* contextObject, const std::string name);
-	static sf::Music* FindMusic(FAssetLoader* contextObject, const std::string name);
+	sf::Texture* FindTexture(const std::string fileName);
+	sf::Font* FindFont(const std::string fileName);
+	sf::Music* FindMusic(const std::string fileName);
 	
 private:
 	std::map<const std::string, std::unique_ptr<sf::Texture>> m_TextureMap;
-	std::map<const std::string, std::unique_ptr<sf::Font>>	m_FontMap;
+	std::map<const std::string, std::unique_ptr<sf::Font>>	m_FrontMap;
 	std::map<const std::string, std::unique_ptr<sf::Music>>	m_MusicMap;
 
-	bool LoadTexture(const std::string filename);
-	bool LoadFont(const std::string filename);
-	bool LoadMusic(const std::string filename);
+	bool LoadTexture(const std::string& filename);
+	bool LoadFont(const std::string& filename);
+	bool LoadMusic(const std::string& filename);
 
 };
 

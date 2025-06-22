@@ -11,7 +11,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find required packages
 find_package(SFML 3.0 COMPONENTS Graphics Window System Audio REQUIRED)
-find_package(Box2D REQUIRED)
+
+# Fetch Box2D 2.4.1 directly from GitHub
+include(FetchContent)
+FetchContent_Declare(
+  box2d
+  URL https://github.com/erincatto/box2d/archive/refs/tags/v2.4.1.tar.gz
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_MakeAvailable(box2d)
 
 # Set source files
 set(SOURCES
@@ -25,11 +33,35 @@ set(SOURCES
     src/Private/TickHandle.cpp
 )
 
+set(HEADERS
+    src/Public/Application.h
+    src/Public/AssetLoader.h
+    src/Public/b2Actor2D.h
+    src/Public/b2Actor2DContactListener.h
+    src/Public/Defines.h
+    src/Public/GameState.h
+    src/Public/Interface.h
+    src/Public/TextRenderer.h
+    src/Public/TickHandle.h
+)
+
 # Create executable
-add_executable(BasketballSFML ${SOURCES})
+add_executable(BasketballSFML ${SOURCES} ${HEADERS})
 
 # Include directories
-target_include_directories(BasketballSFML PRIVATE src/Public)
+target_include_directories(BasketballSFML PRIVATE 
+    src/Public
+    ${SFML_INCLUDE_DIR}
+    ${box2d_SOURCE_DIR}/include
+)
+
+target_include_directories(BasketballSFML PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/Public"
+    "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include"
+    "${FETCHCONTENT_BASE_DIR}/box2d-src/include"
+)
+
+target_compile_definitions(BasketballSFML PRIVATE "PROJECT_ROOT_DIR=\"${CMAKE_SOURCE_DIR}\"")
 
 # Link libraries
 target_link_libraries(BasketballSFML PRIVATE 
@@ -37,7 +69,7 @@ target_link_libraries(BasketballSFML PRIVATE
     SFML::Window 
     SFML::System 
     SFML::Audio
-    box2d::box2d
+    box2d
 )
 
 # Copy resources to build directory
@@ -47,3 +79,16 @@ file(COPY resource DESTINATION ${CMAKE_BINARY_DIR})
 set_target_properties(BasketballSFML PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
 )
+
+add_custom_command(TARGET BasketballSFML POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/resource"
+    "$<TARGET_FILE_DIR:BasketballSFML>/Resources"
+)
+
+if(WIN32)
+    target_sources(BasketballSFML PRIVATE
+        src/Private/Main.cpp
+    )
+    set_property(TARGET BasketballSFML PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:BasketballSFML>")
+endif()
