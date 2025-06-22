@@ -1,14 +1,13 @@
 #include "AssetLoader.h"
 
-FAssetLoader::~FAssetLoader() 
+FAssetLoader::~FAssetLoader()
 {
 	for (auto&& element : m_MusicMap)
 	{
-		if (!element.second.get())
+		if (element.second.get())
 		{
-			continue;
-		} 
-		element.second.get()->stop();
+			element.second.get()->stop();
+		}
 	}
 }
 
@@ -27,65 +26,86 @@ bool FAssetLoader::LoadResources()
 	return bResult;
 }
 
-SFML::Texture* FAssetLoader::FindTexture(FAssetLoader* ContextObject, const std::string Name)
+sf::Texture* FAssetLoader::FindTexture(FAssetLoader* contextObject, const std::string name)
 {
-	if (!ContextObject) return nullptr;
+	if (!contextObject)
+	{
+		return nullptr;
+	}
 
-	auto Iterator = ContextObject->m_TextureMap.find(Name);
-	return (Iterator != ContextObject->m_TextureMap.end()) ? Iterator->second.get() : nullptr ;
+	auto iterator = contextObject->m_TextureMap.find(name);
+	if (iterator != contextObject->m_TextureMap.end())
+	{
+		return iterator->second.get();
+	}
+	return nullptr;
 }
 
-SFML::Font* FAssetLoader::FindFont(FAssetLoader* ContextObject, const std::string Name)
+sf::Font* FAssetLoader::FindFont(FAssetLoader* contextObject, const std::string name)
 {
-	if (!ContextObject) return nullptr;
+	if (!contextObject)
+	{
+		return nullptr;
+	}
 
-	auto Iterator = ContextObject->m_FontMap.find(Name);
-	return (Iterator != ContextObject->m_FontMap.end()) ? Iterator->second.get() : nullptr;
+	auto iterator = contextObject->m_FontMap.find(name);
+	if (iterator != contextObject->m_FontMap.end())
+	{
+		return iterator->second.get();
+	}
+	return nullptr;
 }
 
-SFML::Music* FAssetLoader::FindMusic(FAssetLoader* ContextObject, const std::string Name)
+sf::Music* FAssetLoader::FindMusic(FAssetLoader* contextObject, const std::string name)
 {
-	if (!ContextObject) return nullptr;
+	if (!contextObject)
+	{
+		return nullptr;
+	}
 
-	auto Iterator = ContextObject->m_MusicMap.find(Name);
-	return (Iterator != ContextObject->m_MusicMap.end()) ? Iterator->second.get() : nullptr;
+	auto iterator = contextObject->m_MusicMap.find(name);
+	if (iterator != contextObject->m_MusicMap.end())
+	{
+		return iterator->second.get();
+	}
+	return nullptr;
 }
 
-bool FAssetLoader::LoadTexture(const std::string FileName)
+bool FAssetLoader::LoadTexture(const std::string filename)
 {
-	std::unique_ptr<SFML::Texture> pNewTexture  = std::make_unique<SFML::Texture>();
-	bool bResult = pNewTexture->loadFromFile(FileName);
-	LOAD_CHECK(bResult, FileName);
+	auto pNewTexture = std::make_unique<sf::Texture>();
+	bool bResult = pNewTexture->loadFromFile(filename);
+	LOAD_CHECK(bResult, filename);
 
 	if (bResult)
 	{
-		m_TextureMap.insert(std::pair<const std::string, std::unique_ptr<SFML::Texture>>(FileName, std::move(pNewTexture)));
+		m_TextureMap.insert(std::make_pair(filename, std::move(pNewTexture)));
 	}
 	return bResult;
 }
 
-bool FAssetLoader::LoadFont(const std::string FileName)
+bool FAssetLoader::LoadFont(const std::string filename)
 {
-	std::unique_ptr<SFML::Font> pNewFont = std::make_unique<SFML::Font>();
-	bool bResult = pNewFont->loadFromFile(FileName);
-	LOAD_CHECK(bResult, FileName);
-	
+	auto pNewFont = std::make_unique<sf::Font>();
+	bool bResult = pNewFont->loadFromFile(filename);
+	LOAD_CHECK(bResult, filename);
+
 	if (bResult)
 	{
-		m_FontMap.insert(std::pair<const std::string, std::unique_ptr<SFML::Font>>(FileName, std::move(pNewFont)));
+		m_FontMap.insert(std::make_pair(filename, std::move(pNewFont)));
 	}
 	return bResult;
 }
 
-bool FAssetLoader::LoadMusic(const std::string FileName)
+bool FAssetLoader::LoadMusic(const std::string filename)
 {
-	std::unique_ptr<SFML::Music> pNewMusic = std::make_unique<SFML::Music>();
-	bool bResult = pNewMusic->openFromFile(FileName);
-	LOAD_CHECK(bResult, FileName);
+	auto pNewMusic = std::make_unique<sf::Music>();
+	bool bResult = pNewMusic->openFromFile(filename);
+	LOAD_CHECK(bResult, filename);
 
 	if (bResult)
 	{
-		m_MusicMap.insert(std::pair<const std::string, std::unique_ptr<SFML::Music>>(FileName, std::move(pNewMusic)));
+		m_MusicMap.insert(std::make_pair(filename, std::move(pNewMusic)));
 	}
 	return bResult;
 }

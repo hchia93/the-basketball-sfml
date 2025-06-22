@@ -1,37 +1,37 @@
 #include "TextRenderer.h"
 #include "Application.h"
 
-bool FTextRenderer::BindApplication(Application* Object)
+bool FTextRenderer::BindApplication(Application* object)
 {
-	ContextObject = Object;
-	return ContextObject != nullptr;
+	m_ContextObject = object;
+	return m_ContextObject != nullptr;
 }
 
 void FTextRenderer::Tick()
 {
-	for (auto& i : Texts)
+	for (auto& i : m_Texts)
 	{
 		// Lerps
-		if (i->FadeTime > 0.0f && i->bIsActive && !i->bIsPaused)
+		if (i->m_FadeTime > 0.0f && i->m_bIsActive && !i->m_bIsPaused)
 		{
-			const float LerpDelta = i->LifeTime / i->FadeTime;
-			const SFML::Vector2f PositionDiff = i->EndLocation - i->StartLocation;
-			const SFML::Vector2f ResultPosition = i->StartLocation + (PositionDiff * LerpDelta);
-			i->Text.setPosition(ResultPosition);
+			const float lerpDelta = i->m_LifeTime / i->m_FadeTime;
+			const sf::Vector2f positionDiff = i->m_EndLocation - i->m_StartLocation;
+			const sf::Vector2f resultPosition = i->m_StartLocation + (positionDiff * lerpDelta);
+			i->m_Text.setPosition(resultPosition);
 	
-			SFML::Color DeltaFillColor = i->Text.getFillColor();
-			DeltaFillColor.a = (SFML::Uint8)((1.f - LerpDelta) * 255);
-			i->Text.setFillColor(DeltaFillColor);
+			sf::Color deltaFillColor = i->m_Text.getFillColor();
+			deltaFillColor.a = (sf::Uint8)((1.f - lerpDelta) * 255);
+			i->m_Text.setFillColor(deltaFillColor);
 
-			SFML::Color DeltaOutlineColor = i->Text.getOutlineColor();
-			DeltaOutlineColor.a = (SFML::Uint8)((1.f - LerpDelta) * 255);
-			i->Text.setOutlineColor(DeltaOutlineColor);
+			sf::Color deltaOutlineColor = i->m_Text.getOutlineColor();
+			deltaOutlineColor.a = (sf::Uint8)((1.f - lerpDelta) * 255);
+			i->m_Text.setOutlineColor(deltaOutlineColor);
 
-			i->LifeTime += DELTA_TIME_STEP;
+			i->m_LifeTime += DELTA_TIME_STEP;
 
-			if (i->LifeTime >= i->FadeTime)
+			if (i->m_LifeTime >= i->m_FadeTime)
 			{
-				i->bIsActive = false;
+				i->m_bIsActive = false;
 			}
 		}
 	}

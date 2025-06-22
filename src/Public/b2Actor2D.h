@@ -1,41 +1,44 @@
 #pragma once
-#include <SFML\Graphics.hpp>
-#include <Box2D/Box2D.h>
+#include <SFML/Graphics.hpp>
+#include <box2d/box2d.h>
 #include "Defines.h"
 #include "Interface.h"
 
 static const float PIXEL_PER_METER = 32.0f;
 class Application;
 
-enum EActorShapeType
+enum class EActorShapeType
 {
-	EST_Circle,
-	EST_Rectangle,
-	EST_Convex,
+	Circle,
+	Rectangle,
+	Convex
 };
 
-enum Eb2ShapeType
+enum class Eb2ShapeType
 {
-	ECT_Polygon,
-	ECT_Circle,
-	ECT_Edge,
-	ECT_Chain,
+	Polygon,
+	Circle,
+	Edge,
+	Chain
 };
 
 struct FShapeCollection
 {
-	std::unique_ptr<SFML::CircleShape> CircleShape;
-	std::unique_ptr<SFML::RectangleShape> RectangleShape;
-	std::unique_ptr<SFML::ConvexShape> ConvexShape;
-	EActorShapeType ShapeType;
+	std::unique_ptr<sf::CircleShape> m_CircleShape;
+	std::unique_ptr<sf::RectangleShape> m_RectangleShape;
+	std::unique_ptr<sf::ConvexShape> m_ConvexShape;
+	EActorShapeType m_ShapeType;
 
-	SFML::Shape* Get()
+	sf::Shape* Get()
 	{
-		switch (ShapeType)
+		switch (m_ShapeType)
 		{
-			case EActorShapeType::EST_Rectangle:	return RectangleShape.get();
-			case EActorShapeType::EST_Circle:		return CircleShape.get();
-			case EActorShapeType::EST_Convex:		return ConvexShape.get();	
+			case EActorShapeType::Rectangle:
+				return m_RectangleShape.get();
+			case EActorShapeType::Circle:
+				return m_CircleShape.get();
+			case EActorShapeType::Convex:
+				return m_ConvexShape.get();
 		}
 		return nullptr;
 	}
@@ -43,100 +46,97 @@ struct FShapeCollection
 
 struct Fb2ActorSpawnParam
 {
-	Application* Package;
-	b2World* WorldContext;
-	std::string Name;
-	EActorShapeType ShapeType;
-	Eb2ShapeType BodyType;
-	SFML::Vector2f Size; 
-	SFML::Vector2f Location;
-	float Rotation; 
-	bool bIsDynamicBody; 
-	bool bGenerateOverlaps;
-	bool bAutoActivate;
+	Application* m_Package;
+	b2World* m_WorldContext;
+	std::string m_Name;
+	EActorShapeType m_ShapeType;
+	Eb2ShapeType m_BodyType;
+	sf::Vector2f m_Size;
+	sf::Vector2f m_Location;
+	float m_Rotation;
+	bool m_bIsDynamicBody;
+	bool m_bGenerateOverlaps;
+	bool m_bAutoActivate;
 };
 
 class b2Actor2D : public ITickable
 {
 public:
-
-	b2Actor2D(Application* Package, b2World* WorldContext, const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size = SFML::Vector2f(1,1), SFML::Vector2f Location = SFML::Vector2f(0,0), const float Rotation = 0.0f, const bool bIsDynamicBody = false, const bool bGenerateOverlaps = false, const bool bAutoActivate = true);
-	b2Actor2D(const Fb2ActorSpawnParam SpawnParam);
+	b2Actor2D(Application* package, b2World* worldContext, const std::string name, const EActorShapeType shapeType, const Eb2ShapeType bodyType, sf::Vector2f size = sf::Vector2f(1,1), sf::Vector2f location = sf::Vector2f(0,0), const float rotation = 0.0f, const bool bIsDynamicBody = false, const bool bGenerateOverlaps = false, const bool bAutoActivate = true);
+	b2Actor2D(const Fb2ActorSpawnParam spawnParam);
 	~b2Actor2D();
 
 	virtual void Tick() override;
-	std::string		GetObjectName()			const	{ return ObjectName;  }
-	SFML::Shape*	GetShape()						{ return ObjectShapes.Get(); }
-	b2FixtureDef*	GetFixtureDefinition()			{ if (FixtureDefinition) return FixtureDefinition.get(); else LOG("No BodyFixture"); return nullptr; }
-	
-	b2Body*			GetBodyInstance()				{ if (BodyInstance) return BodyInstance; else LOG("No BodyInstance"); return nullptr; }
-	Application*	GetPackage()			const	{ return Package; }
-	bool			IsDynamic()				const	{ return bIsDynamicObject; }
-	bool			IsActive()				const	{ return bIsActive; }
+	std::string GetObjectName() const;
+	sf::Shape* GetShape();
+	b2FixtureDef* GetFixtureDefinition();
+	b2Body* GetBodyInstance();
+	Application* GetPackage() const;
+	bool IsDynamic() const;
+	bool IsActive() const;
 
-	const SFML::Vector2f&	GetLocation()			{ return ObjectShapes.Get()->getPosition(); }
-	void SetInitTransform(SFML::Vector2f Location, float Rotation)	{ SetInitLocation(Location); SetInitRotation(Rotation); }
-	void SetInitLocation(b2Vec2 Location)							{ InitialPosition = Location; }
-	void SetInitLocation(SFML::Vector2f Location)					{ InitialPosition = b2Actor2D::Tob2Vec2Location(Location); }
-	void SetInitRotation(float Rotation)							{ InitialRotation = Rotation; }
+	const sf::Vector2f& GetLocation();
+	void SetInitTransform(sf::Vector2f location, float rotation);
+	void SetInitLocation(b2Vec2 location);
+	void SetInitLocation(sf::Vector2f location);
+	void SetInitRotation(float rotation);
 	void ResetToInitTransform();
 
-	void BeginOverlap(b2Actor2D* OverlappedActor);
-	void EndOverlap(b2Actor2D* OverlappedActor);
-	void BindOnBeginoverlap(void (*Callback)(b2Actor2D* OverlappedActor));
-	void BindOnEndOverlap(void (*Callback)(b2Actor2D* OverlappedActor));
-	void BindOnTick(void(*TickFunction)(b2Actor2D* Actor));
+	void BeginOverlap(b2Actor2D* overlappedActor);
+	void EndOverlap(b2Actor2D* overlappedActor);
+	void BindOnBeginoverlap(void (*callback)(b2Actor2D* overlappedActor));
+	void BindOnEndOverlap(void (*callback)(b2Actor2D* overlappedActor));
+	void BindOnTick(void (*tickFunction)(b2Actor2D* actor));
 
 	void Activate();
 	void MakeInactive();
 
 	/** Utility*/
-	static b2Vec2 Tob2Vec2Location(SFML::Vector2f Location) { return b2Vec2(Location.x / PIXEL_PER_METER, Location.y / PIXEL_PER_METER); };
-	
-	std::unique_ptr<SFML::RectangleShape> DebugForward;
+	static b2Vec2 Tob2Vec2Location(sf::Vector2f location);
+
+	std::unique_ptr<sf::RectangleShape> m_DebugForward;
 
 private:
+	void Construct(Application* package, b2World* worldContext, const std::string name, const EActorShapeType shapeType, const Eb2ShapeType bodyType, sf::Vector2f size = sf::Vector2f(1, 1), sf::Vector2f location = sf::Vector2f(0, 0), const float rotation = 0.0f, const bool bIsDynamicBody = false, const bool bGenerateOverlaps = false, const bool bAutoActivate = true);
+	void MakeShapeInstance(const EActorShapeType shapeType);
+	void SetShapeProperties(const EActorShapeType shapeType, sf::Vector2f size);
+	void MakeB2ShapeInstance(const Eb2ShapeType bodyType);
+	void SetB2ShapeProperties(const Eb2ShapeType bodyType, sf::Vector2f size);
 
-	void Construct(Application* Package, b2World* WorldContext, const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size = SFML::Vector2f(1, 1), SFML::Vector2f Location = SFML::Vector2f(0, 0), const float Rotation = 0.0f, const bool bIsDynamicBody = false, const bool bGenerateOverlaps = false, const bool bAutoActivate = true);
-	void MakeShapeInstance(const EActorShapeType ShapeType);
-	void SetShapeProperties(const EActorShapeType ShapeType, SFML::Vector2f Size);
-	void MakeB2ShapeInstance(const Eb2ShapeType BodyType);
-	void SetB2ShapeProperties(const Eb2ShapeType BodyType, SFML::Vector2f Size);
+	void(*m_OnBeginOverlapCallback)(b2Actor2D* overlappedActor) = nullptr;
+	void(*m_OnEndOverlapCallback)(b2Actor2D* overlappedActor) = nullptr;
+	void(*m_TickCallback)(b2Actor2D* actor) = nullptr;
 
-	void(*OnBeginOverlapCallback)(b2Actor2D* OverlappedActor) = 0;
-	void(*OnEndOverlapCallback)(b2Actor2D* OverlappedActor) = 0;
-	void(*TickCallback)(b2Actor2D* Actor) = 0;
-
-	std::string ObjectName;
+	std::string m_ObjectName;
 
 	/** Internally contains unique ptr to assigned shape. (Try std::variant)*/
-	FShapeCollection ObjectShapes;	// Act like display component
+	FShapeCollection m_ObjectShapes;	// Act like display component
 
 	/** Box2D Components*/
-	b2Body* BodyInstance;
-	std::unique_ptr<b2BodyDef>		BodyDefinition;
-	std::unique_ptr<b2Shape>		BodyShape;				// Act as collision component
-	std::unique_ptr<b2FixtureDef>	FixtureDefinition;
-	Eb2ShapeType CollisionType;
+	b2Body* m_BodyInstance;
+	std::unique_ptr<b2BodyDef> m_BodyDefinition;
+	std::unique_ptr<b2Shape> m_BodyShape; // Act as collision component
+	std::unique_ptr<b2FixtureDef> m_FixtureDefinition;
+	Eb2ShapeType m_CollisionType;
 
 	/////////////////////////////////
 	//		Cache
 	/////////////////////////////////
 
 	/** Reference only, doesn't own object.*/
-	Application* Package;
+	Application* m_Package;
 
 	/** Reference only, doesn't own object.*/
-	SFML::Shape* ObjectShapeCache;
+	sf::Shape* m_ObjectShapeCache;
 
-	b2Vec2 InitialPosition;
-	float InitialRotation;
+	b2Vec2 m_InitialPosition;
+	float m_InitialRotation;
 
 	/////////////////////////////////
 	//		Flags
 	/////////////////////////////////
 
-	bool bIsActive = false;
-	bool bGenerateOverlaps = false;
-	bool bIsDynamicObject = false;
+	bool m_bIsActive = false;
+	bool m_bGenerateOverlaps = false;
+	bool m_bIsDynamicObject = false;
 };

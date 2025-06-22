@@ -47,13 +47,13 @@ VisualStudioSolutionGenerator.bat
 ### Step 3: Build and Run
 
 Open the generated solution located at:
-- **`generated-vs/vulkan-tutorial-triangle.sln`**
+- **`generated-vs/BasketBallSFML`**
 
 Press **F5** to build and run the application.
 
 > **⚠️ Important First-Time Setup**
 > The first time you open the solution, you may need to manually set the startup project.
-> 1. In the **Solution Explorer**, **right-click** on `vulkan-tutorial-triangle`.
+> 1. In the **Solution Explorer**, **right-click** on `generated-vs/BasketBallSFML`.
 > 2. Select **"Set as StartUp Project"** from the menu.
 >
 > You only need to do this once.

@@ -6,20 +6,21 @@
 
 Application::Application()
 {
-	b2ActorContactListner = std::make_unique<b2Actor2DContactListener>();
-
-	Gravity = b2Vec2(0.f, 9.81f);
-	World = std::make_shared<b2World>(Gravity);
-	World->SetContactListener(b2ActorContactListner.get());
+	m_b2ActorContactListner = std::make_unique<b2Actor2DContactListener>();
+	m_Gravity = b2Vec2(0.f, 9.81f);
+	m_World = std::make_shared<b2World>(m_Gravity);
+	m_World->SetContactListener(m_b2ActorContactListner.get());
 }
 
-Application::~Application() {}
+Application::~Application()
+{
+}
 
 void Application::BeginPlay()
 {
-	while (AppWindow.isOpen())
+	while (m_AppWindow.isOpen())
 	{
-		TickHandle.BeginTick();
+		m_TickHandle.BeginTick();
 	}
 
 	EndPlay();
@@ -27,111 +28,103 @@ void Application::BeginPlay()
 
 int Application::Initialize()
 {
-	// Reduce the code length, scope in this function only.
-	using namespace sf;
-	using namespace std;
-
 	bool bInitChecks = true;
-	bInitChecks &= TickHandle.BindApplication(this);
-	bInitChecks &= GameState.BindApplication(this);
-	bInitChecks &= TextRenderer.BindApplication(this);
-	bInitChecks &= AssetLoader.LoadResources();
+	bInitChecks &= m_TickHandle.BindApplication(this);
+	bInitChecks &= m_GameState.BindApplication(this);
+	bInitChecks &= m_TextRenderer.BindApplication(this);
+	bInitChecks &= m_AssetLoader.LoadResources();
 
 	if (bInitChecks)
 	{
-		if (BGM = FAssetLoader::FindMusic(&AssetLoader, RESOURCES_AUDIO_TROLOLO))
+		m_BGM = FAssetLoader::FindMusic(&m_AssetLoader, RESOURCES_AUDIO_TROLOLO);
+		if (m_BGM)
 		{
-			BGM->setVolume(0);
-			BGM->setLoop(true);
-			BGM->play();
+			m_BGM->setVolume(0);
+			m_BGM->setLoop(true);
+			m_BGM->play();
 		}
 
-		// Window creation
-		AppWindow.create(RenderWindowData.GetVideoModeFromData(), RenderWindowData.GetWindowName());
-		AppWindow.setVerticalSyncEnabled(true);
-		AppWindow.setActive();
+		m_AppWindow.create(m_RenderWindowData.GetVideoModeFromData(), m_RenderWindowData.GetWindowName());
+		m_AppWindow.setVerticalSyncEnabled(true);
+		m_AppWindow.setActive();
 
-		// Border creations
-		const float BorderThickness = 16.0f;
-		const float ViewportX = (float)RenderWindowData.Width;
-		const float ViewportY = (float)RenderWindowData.Height;
-		const Vector2f XBorder(ViewportX, BorderThickness);
-		const Vector2f YBorder(BorderThickness, ViewportY * 0.7f);
-		const Vector2f UBorderLocation(ViewportX * 0.5f						, BorderThickness * 0.5f);
-		const Vector2f DBorderLocation(ViewportX * 0.5f						, ViewportY - BorderThickness * 0.5f);
-		const Vector2f LBorderLocation(BorderThickness * 0.5f				, ViewportY * 0.5f - (ViewportY * .15f) ); // 1 - .7f div 2
-		const Vector2f RBorderLocation(ViewportX - BorderThickness * 0.5f	, ViewportY * 0.5f - (ViewportY * .15f) ); // 1 - .7f div 2
+		const float borderThickness = 16.0f;
+		const float viewportX = (float)m_RenderWindowData.m_Width;
+		const float viewportY = (float)m_RenderWindowData.m_Height;
+		const sf::Vector2f xBorder(viewportX, borderThickness);
+		const sf::Vector2f yBorder(borderThickness, viewportY * 0.7f);
+		const sf::Vector2f uBorderLocation(viewportX * 0.5f, borderThickness * 0.5f);
+		const sf::Vector2f dBorderLocation(viewportX * 0.5f, viewportY - borderThickness * 0.5f);
+		const sf::Vector2f lBorderLocation(borderThickness * 0.5f, viewportY * 0.5f - (viewportY * .15f));
+		const sf::Vector2f rBorderLocation(viewportX - borderThickness * 0.5f, viewportY * 0.5f - (viewportY * .15f));
 
-		// Collapsed function body. Transfering ownership of local unique ptr to the container
-		auto b2ActorInit = [this](unique_ptr<b2Actor2D>& p, const Color c) ->void 
+		auto b2ActorInit = [this](std::unique_ptr<b2Actor2D>& p, const sf::Color c) -> void
 		{
 			p->GetShape()->setOutlineThickness(-1);
-			p->GetShape()->setOutlineColor(Color::Black);
+			p->GetShape()->setOutlineColor(sf::Color::Black);
 			p->GetShape()->setFillColor(c);
-			b2Actors.push_back(move(p));
+			m_b2Actors.push_back(std::move(p));
 		};
 
-		unique_ptr<b2Actor2D> TopBorder = make_unique<b2Actor2D>(this, World.get(), "TopBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, UBorderLocation);
-		b2ActorInit(TopBorder, Color(100, 100, 100));
+		auto topBorder = std::make_unique<b2Actor2D>(this, m_World.get(), "TopBorder", EActorShapeType::Rectangle, Eb2ShapeType::Polygon, xBorder, uBorderLocation);
+		b2ActorInit(topBorder, sf::Color(100, 100, 100));
 
-		unique_ptr<b2Actor2D> LeftBorder = make_unique<b2Actor2D>(this, World.get(), "LeftBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, LBorderLocation);
-		b2ActorInit(LeftBorder , Color(100, 100, 100) );
+		auto leftBorder = std::make_unique<b2Actor2D>(this, m_World.get(), "LeftBorder", EActorShapeType::Rectangle, Eb2ShapeType::Polygon, yBorder, lBorderLocation);
+		b2ActorInit(leftBorder, sf::Color(100, 100, 100));
 
-		unique_ptr<b2Actor2D> RightBorder = make_unique<b2Actor2D>(this, World.get(), "RightBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, RBorderLocation);
-		b2ActorInit(RightBorder,Color(100, 100, 100));
+		auto rightBorder = std::make_unique<b2Actor2D>(this, m_World.get(), "RightBorder", EActorShapeType::Rectangle, Eb2ShapeType::Polygon, yBorder, rBorderLocation);
+		b2ActorInit(rightBorder, sf::Color(100, 100, 100));
 
 #if 1 // debug floor!
-		unique_ptr<b2Actor2D> BotBorder = make_unique<b2Actor2D>(this, World.get(), "BotBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, DBorderLocation);
-		b2ActorInit(BotBorder, Color(100, 100, 100));
-#endif 
-		unique_ptr<RectangleShape> Background = make_unique<RectangleShape>(Vector2f(ViewportX, ViewportY));
-		Background->setTexture(FAssetLoader::FindTexture(&AssetLoader, RESOURCES_TEXTURE_BACKGROUND));
-		RenderShapes.push_back(move(Background));
+		auto botBorder = std::make_unique<b2Actor2D>(this, m_World.get(), "BotBorder", EActorShapeType::Rectangle, Eb2ShapeType::Polygon, xBorder, dBorderLocation);
+		b2ActorInit(botBorder, sf::Color(100, 100, 100));
+#endif
+		auto background = std::make_unique<sf::RectangleShape>(sf::Vector2f(viewportX, viewportY));
+		background->setTexture(FAssetLoader::FindTexture(&m_AssetLoader, RESOURCES_TEXTURE_BACKGROUND));
+		m_RenderShapes.push_back(std::move(background));
 
-		unique_ptr<RectangleShape> Scoreboard = make_unique<RectangleShape>(Vector2f(ViewportX, ViewportY * .3f));
-		Scoreboard->setPosition(0.0f, ViewportY * 0.7f);
-		Scoreboard->setTexture(FAssetLoader::FindTexture(&AssetLoader, RESOURCES_TEXTURE_CHALKBOARD));
-		RenderShapes.push_back(move(Scoreboard));
+		auto scoreboard = std::make_unique<sf::RectangleShape>(sf::Vector2f(viewportX, viewportY * .3f));
+		scoreboard->setPosition(0.0f, viewportY * 0.7f);
+		scoreboard->setTexture(FAssetLoader::FindTexture(&m_AssetLoader, RESOURCES_TEXTURE_CHALKBOARD));
+		m_RenderShapes.push_back(std::move(scoreboard));
 
-		unique_ptr<RectangleShape> ChargeGaugeMaxUniquePtr = make_unique<RectangleShape>();
-		ChargeGaugeMaxUniquePtr->setFillColor(Color(145, 145, 145, 255));
-		ChargeGaugeMaxUniquePtr->setSize(Vector2f(160.0f, 8.0f));
-		ChargeGaugeMax = ChargeGaugeMaxUniquePtr.get(); // Fill up the cache pointer, but it is rely on its last moved position!
-		RenderShapes.push_back(move(ChargeGaugeMaxUniquePtr));
+		auto chargeGaugeMaxUniquePtr = std::make_unique<sf::RectangleShape>();
+		chargeGaugeMaxUniquePtr->setFillColor(sf::Color(145, 145, 145, 255));
+		chargeGaugeMaxUniquePtr->setSize(sf::Vector2f(160.0f, 8.0f));
+		m_ChargeGaugeMax = chargeGaugeMaxUniquePtr.get();
+		m_RenderShapes.push_back(std::move(chargeGaugeMaxUniquePtr));
 
-		unique_ptr<RectangleShape> ChargeGaugeProgressUniquePtr = make_unique<RectangleShape>();
-		ChargeGaugeProgressUniquePtr->setFillColor(Color::Yellow);
-		ChargeGaugeProgressUniquePtr->setFillColor(Color::Yellow);
-		ChargeGaugeProgress = ChargeGaugeProgressUniquePtr.get(); // Fill up the cache pointer, but it is rely on its last moved position!
-		RenderShapes.push_back(move(ChargeGaugeProgressUniquePtr));
+		auto chargeGaugeProgressUniquePtr = std::make_unique<sf::RectangleShape>();
+		chargeGaugeProgressUniquePtr->setFillColor(sf::Color::Yellow);
+		m_ChargeGaugeProgress = chargeGaugeProgressUniquePtr.get();
+		m_RenderShapes.push_back(std::move(chargeGaugeProgressUniquePtr));
 
 		for (int i = 0; i < 2; i++)
 		{
-			AngleIndicators[i].color = (i == 1) ? Color::Cyan : Color::Blue;
+			m_AngleIndicators[i].color = (i == 1) ? sf::Color::Cyan : sf::Color::Blue;
 		}
-		
-		// Board
-		const float offsetX = ViewportX * 0.98f;
-		const float offsetY = ViewportY * 0.35f;
-		const Vector2f boardSize(8.0f, 200.0f);
-		const Vector2f boardPos(ViewportX * 0.98f, ViewportY * 0.35f);
 
-		unique_ptr<b2Actor2D> BoardFrame1 = make_unique<b2Actor2D>(this, World.get(), "board1", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, boardSize, boardPos);
-		b2ActorInit(BoardFrame1, Color(40, 40, 40, 255));
+		const float offsetX = viewportX * 0.98f;
+		const float offsetY = viewportY * 0.35f;
+		const sf::Vector2f boardSize(8.0f, 200.0f);
+		const sf::Vector2f boardPos(viewportX * 0.98f, viewportY * 0.35f);
 
-		const Vector2f netEdgeSize(8.0f, 90.0f);
-		const Vector2f netEdgePos(offsetX - 48.0f + (netEdgeSize.y / 2 * sin(-0.174533f)), offsetY + 16.0f);
-		
-		unique_ptr<b2Actor2D> BoardFrame2 = make_unique<b2Actor2D>(this, World.get(), "board2", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, netEdgeSize, netEdgePos);
-		BoardFrame2->GetBodyInstance()->SetTransform(BoardFrame2->GetBodyInstance()->GetPosition(), -0.261799388f);
-		b2ActorInit(BoardFrame2, Color(40, 40, 40, 255));
-	
-		const Vector2f sensorSize(48.0f, 48.0f);
-		const Vector2f sensorPos((boardPos.x + netEdgePos.x) / 2, netEdgePos.y);
-		
-		unique_ptr<b2Actor2D> ScoreSensor = make_unique<b2Actor2D>(this, World.get(), "sensor", EActorShapeType::EST_Circle, Eb2ShapeType::ECT_Circle, sensorSize, sensorPos, 0.0f, false, true);
-		ScoreSensor->BindOnBeginoverlap(SensorOverlap);
-		b2ActorInit(ScoreSensor, Color(255, 255, 0, 100));
+		auto boardFrame1 = std::make_unique<b2Actor2D>(this, m_World.get(), "board1", EActorShapeType::Rectangle, Eb2ShapeType::Polygon, boardSize, boardPos);
+		b2ActorInit(boardFrame1, sf::Color(40, 40, 40, 255));
+
+		const sf::Vector2f netEdgeSize(8.0f, 90.0f);
+		const sf::Vector2f netEdgePos(offsetX - 48.0f + (netEdgeSize.y / 2 * sin(-0.174533f)), offsetY + 16.0f);
+
+		auto boardFrame2 = std::make_unique<b2Actor2D>(this, m_World.get(), "board2", EActorShapeType::Rectangle, Eb2ShapeType::Polygon, netEdgeSize, netEdgePos);
+		boardFrame2->GetBodyInstance()->SetTransform(boardFrame2->GetBodyInstance()->GetPosition(), -0.261799388f);
+		b2ActorInit(boardFrame2, sf::Color(40, 40, 40, 255));
+
+		const sf::Vector2f sensorSize(48.0f, 48.0f);
+		const sf::Vector2f sensorPos((boardPos.x + netEdgePos.x) / 2, netEdgePos.y);
+
+		auto scoreSensor = std::make_unique<b2Actor2D>(this, m_World.get(), "sensor", EActorShapeType::Circle, Eb2ShapeType::Circle, sensorSize, sensorPos, 0.0f, false, true);
+		scoreSensor->BindOnBeginoverlap(SensorOverlap);
+		b2ActorInit(scoreSensor, sf::Color(255, 255, 0, 100));
 
 		MakeTrack();
 		MakeProjector();
@@ -141,383 +134,344 @@ int Application::Initialize()
 	return bInitChecks;
 }
 
-void Application::Tick(const float DeltaTime)
+void Application::Tick(const float deltaTime)
 {
-	SFML::Event ExitEvent;
-
-	// Delay PollEvent, avoid to use
-	while (AppWindow.pollEvent(ExitEvent));
+	sf::Event exitEvent;
+	while (m_AppWindow.pollEvent(exitEvent))
 	{
-		if (ExitEvent.type == SFML::Event::Closed)
+		if (exitEvent.type == sf::Event::Closed)
 		{
-			AppWindow.close();		
+			m_AppWindow.close();
 		}
 	}
 
-	GameState.Tick();
-	TextRenderer.Tick();
+	m_GameState.Tick();
+	m_TextRenderer.Tick();
 
-	for (auto& i : b2Actors)
-		if (i) i->Tick();
-
-	for (auto& i : Balls)
-		if (i) i->Tick();
-	
-	// Need to update on tick.
-	LevelTextCache->Text.setString("LEVEL\n" + GameState.GetLevelString());
-	ScoreCache->Text.setString("SCORE\n" + GameState.GetScoreString());
-	HiScoreCache->Text.setString("HISCORE\n" + GameState.GetHiScoreString());
-	BallCountCache->Text.setString("REQ. BALL\n" + GameState.GetReqBallString());
-	CountdownTimeCache->Text.setString("REMAINING TIME\n" + GameState.GetRemainingTimeString() + " S");
-	ElapsedTimeCache->Text.setString("ELAPSED MIN\n" + GameState.GetElapsedTimeMinString() + " M" + GameState.GetElapsedTimeSecondString() + " S");
-
-	
-	if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::Space))
+	for (auto& element : m_b2Actors)
 	{
-		if (!GameState.GetIsGameStarted())
+		if (element)
 		{
-			GameState.StartGame();
-			CenterTextCache->bIsPaused = false;
+			element->Tick();
 		}
 	}
 
-	if (SFML::Mouse::isButtonPressed(SFML::Mouse::Left))
+	for (auto& element : m_Balls)
 	{
-
-		//If the game already Started, Do something else.
-		if (!GameState.GetIsGameOver() && GameState.GetIsGameStarted())
+		if (element)
 		{
-			GameState.ChargeProjectionVelocity();
+			element->Tick();
+		}
+	}
+
+	m_LevelTextCache->m_Text.setString("LEVEL\n" + m_GameState.GetLevelString());
+	m_ScoreCache->m_Text.setString("SCORE\n" + m_GameState.GetScoreString());
+	m_HiScoreCache->m_Text.setString("HISCORE\n" + m_GameState.GetHiScoreString());
+	m_BallCountCache->m_Text.setString("REQ. BALL\n" + m_GameState.GetReqBallString());
+	m_CountdownTimeCache->m_Text.setString("REMAINING TIME\n" + m_GameState.GetRemainingTimeString() + " S");
+	m_ElapsedTimeCache->m_Text.setString("ELAPSED MIN\n" + m_GameState.GetElapsedTimeMinString() + " M" + m_GameState.GetElapsedTimeSecondString() + " S");
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+	{
+		if (!m_GameState.GetIsGameStarted())
+		{
+			m_GameState.StartGame();
+			m_CenterTextCache->m_bIsPaused = false;
+		}
+	}
+
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+	{
+		if (!m_GameState.GetIsGameOver() && m_GameState.GetIsGameStarted())
+		{
+			m_GameState.ChargeProjectionVelocity();
 		}
 	}
 	else
 	{
-		GameState.DischargeProjectionVelocity();
+		m_GameState.DischargeProjectionVelocity();
 	}
 
-	// Right Click to Spawn Ball.
-	if (SFML::Mouse::isButtonPressed(SFML::Mouse::Right))
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
 	{
-		if (!bRightMousePressed)
+		if (!m_bRightMousePressed)
 		{
-			if (!GameState.GetIsGameOver() && GameState.GetIsGameStarted())
+			if (!m_GameState.GetIsGameOver() && m_GameState.GetIsGameStarted())
 			{
 				SpawnBall();
 			}
-			bRightMousePressed = true;
+			m_bRightMousePressed = true;
 		}
 	}
 	else
 	{
-		bRightMousePressed = false;
+		m_bRightMousePressed = false;
 	}
-	// Middle Button ： Reset
-	if (SFML::Mouse::isButtonPressed(SFML::Mouse::Middle))
+
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
 	{
-		if (!bMiddleMousePressed)
+		if (!m_bMiddleMousePressed)
 		{
-			bMiddleMousePressed = true;
+			m_bMiddleMousePressed = true;
 
-			GameState.ResetGame();
-			TickHandle.ClearTimer();
-			CenterTextCache->Init();
-			CenterTextCache->bIsActive = true;
-			CenterTextCache->bIsPaused = true;
-			PivotCache->ResetToInitTransform();
-			WheelCache->ResetToInitTransform();
+			m_GameState.ResetGame();
+			m_TickHandle.ClearTimer();
+			m_CenterTextCache->Init();
+			m_CenterTextCache->m_bIsActive = true;
+			m_CenterTextCache->m_bIsPaused = true;
+			m_PivotCache->ResetToInitTransform();
+			m_WheelCache->ResetToInitTransform();
 
-			for (auto& i : Balls)
-				i->MakeInactive();
+			for (auto& element : m_Balls)
+			{
+				if (element)
+				{
+					element->MakeInactive();
+				}
+			}
 		}
 	}
 	else
 	{
-		bMiddleMousePressed = false;
+		m_bMiddleMousePressed = false;
 	}
-	
 
-	// Update Info Gauge
 	float maxVelocity = 60.0f;
-	float percentage = GameState.GetChargedBallVelocity() / maxVelocity;
+	float percentage = m_GameState.GetChargedBallVelocity() / maxVelocity;
 
-	const SFML::Vector2f PivotLocation = PivotCache->GetLocation();
-	const SFML::Vector2f MouseLocation = SFML::Vector2f(SFML::Mouse::getPosition(AppWindow));
-	const SFML::Vector2f OffsetMouseLocation = SFML::Vector2f(SFML::Mouse::getPosition(AppWindow) - SFML::Vector2i(16, 16));
+	const sf::Vector2f pivotLocation = m_PivotCache->GetLocation();
+	const sf::Vector2f mouseLocation = sf::Vector2f(sf::Mouse::getPosition(m_AppWindow));
+	const sf::Vector2f offsetMouseLocation = sf::Vector2f(sf::Mouse::getPosition(m_AppWindow) - sf::Vector2i(16, 16));
 
-	ChargeGaugeMax->setPosition(OffsetMouseLocation);
-	ChargeGaugeMax->setSize(SFML::Vector2f(160.0f, 8.0f));
-	ChargeGaugeProgress->setPosition(OffsetMouseLocation);
-	ChargeGaugeProgress->setSize(SFML::Vector2f(160.0f * percentage, 8.0f));;
+	m_ChargeGaugeMax->setPosition(offsetMouseLocation);
+	m_ChargeGaugeMax->setSize(sf::Vector2f(160.0f, 8.0f));
+	m_ChargeGaugeProgress->setPosition(offsetMouseLocation);
+	m_ChargeGaugeProgress->setSize(sf::Vector2f(160.0f * percentage, 8.0f));
 
-	// Update Angle Indicator
-	AngleIndicators[0].position = PivotLocation;
-	AngleIndicators[1].position = MouseLocation;
+	const sf::Vector2f direction = pivotLocation - mouseLocation;
+	const float rotation = (atan2(direction.y, direction.x)) * 180.0f / (float)PI;
+	m_PivotCache->GetBodyInstance()->SetTransform(m_PivotCache->GetBodyInstance()->GetPosition(), rotation * (float)PI / 180.0f);
+	m_WheelCache->GetBodyInstance()->SetTransform(m_WheelCache->GetBodyInstance()->GetPosition(), rotation * (float)PI / 180.0f);
 
-	// Rendering
-	AppWindow.clear(CORNFLOWER_BLUE);
+	m_AngleIndicators[0].position = pivotLocation;
+	m_AngleIndicators[1].position = mouseLocation;
 
-	for (auto& Itr : RenderShapes)
-		AppWindow.draw(*Itr);
-
-
-	for (auto& Itr : b2Actors)
-		AppWindow.draw(*Itr->GetShape());
-
-	for (auto& Itr : Balls)
+	m_AppWindow.clear();
+	for (const auto& element : m_RenderShapes)
 	{
-		AppWindow.draw(*Itr->GetShape());
-		AppWindow.draw(*Itr->DebugForward);
+		if (element)
+		{
+			m_AppWindow.draw(*element);
+		}
+	}
+	for (const auto& element : m_b2Actors)
+	{
+		if (element && element->IsActive())
+		{
+			m_AppWindow.draw(*(element->GetShape()));
+		}
+	}
+	for (const auto& element : m_Balls)
+	{
+		if (element && element->IsActive())
+		{
+			m_AppWindow.draw(*(element->GetShape()));
+			m_AppWindow.draw(*(element->m_DebugForward));
+		}
+	}
+	for (const auto& element : m_TextRenderer.GetTextData())
+	{
+		if (element && element->m_bIsActive)
+		{
+			m_AppWindow.draw(element->m_Text);
+		}
 	}
 
-	for (auto& Itr : TextRenderer.GetTextData())
-	{
-		if(Itr->bIsActive)
-			AppWindow.draw(Itr->Text);
-	}
-
-	AppWindow.draw(AngleIndicators, 2, SFML::Lines);
-	AppWindow.display();
+	m_AppWindow.draw(m_AngleIndicators, 2, sf::Lines);
+	m_AppWindow.display();
 }
 
 void Application::EndPlay()
 {
-	TickHandle.EndTick();
+	m_TickHandle.EndTick();
+}
+
+void Application::PivotTick(b2Actor2D* actor)
+{
+	if (actor)
+	{
+		const float angularVelocity = -20.0f;
+		actor->GetBodyInstance()->SetAngularVelocity(angularVelocity);
+	}
+}
+
+void Application::WheelTick(b2Actor2D* actor)
+{
+	if (actor)
+	{
+		const float angularVelocity = 20.0f;
+		actor->GetBodyInstance()->SetAngularVelocity(angularVelocity);
+	}
+}
+
+void Application::BallTick(b2Actor2D* actor)
+{
+	if (actor)
+	{
+		if (actor->GetBodyInstance()->GetPosition().y > 100)
+		{
+			actor->MakeInactive();
+		}
+	}
+}
+
+void Application::SensorOverlap(b2Actor2D* overlapActor)
+{
+	if (overlapActor && overlapActor->GetObjectName() == "ball")
+	{
+		FGameState* gameState = (FGameState*)(&(static_cast<Application*>(overlapActor->GetPackage())->m_GameState));
+		if (gameState)
+		{
+			gameState->ScoreBall();
+		}
+	}
 }
 
 void Application::MakeTrack()
 {
-	using namespace std;
-	using namespace sf;
+	const float viewportX = (float)m_RenderWindowData.m_Width;
+	const float viewportY = (float)m_RenderWindowData.m_Height;
 
-	// The Track 
-	const float ViewportX = (float)RenderWindowData.Width;
-	const float ViewportY = (float)RenderWindowData.Height;
-	const int Row = 14;
-	const int Column = 2;
-
-	const Vector2f StartLocation(ViewportX * 0.15f, ViewportY - 16.0f - (Row*32.0f));
-	const Vector2f Size(32.0f, 32.0f);
-
-	unique_ptr<RectangleShape> Tracks[Row][Column];
-	for (int i = 0; i < Row; ++i)
+	auto setup = [this](std::unique_ptr<b2Actor2D>& p, const sf::Color c) -> void
 	{
-		for (int j = 0; j < Column; ++j)
-		{
-			Tracks[i][j] = make_unique<RectangleShape>();
+		p->GetShape()->setOutlineThickness(-1);
+		p->GetShape()->setOutlineColor(sf::Color::Black);
+		p->GetShape()->setFillColor(c);
+		m_b2Actors.push_back(std::move(p));
+	};
 
-			Tracks[i][j]->setSize(Size);
-			Tracks[i][j]->setPosition(StartLocation.x + j * 32.0f, StartLocation.y + i * 32.0f);
-			Tracks[i][j]->setTexture(FAssetLoader::FindTexture(&AssetLoader, RESOURCES_TEXTURE_BOXALT));
-			RenderShapes.push_back(move(Tracks[i][j]));
-		}
+	const int step = 32;
+	for (int i = 1; i < step; ++i)
+	{
+		const float t = (float)i / (float)(step - 1);
+		const float x = lerp(viewportX * 0.25f, viewportX * 0.75f, t);
+		const float y = viewportY * 0.5f + sin(t * PI * 2.0f) * 100.0f;
+
+		auto p = std::make_unique<b2Actor2D>(this, m_World.get(), "track", EActorShapeType::Circle, Eb2ShapeType::Circle, sf::Vector2f(16.0f, 16.0f), sf::Vector2f(x, y));
+		setup(p, sf::Color(255, 100, 100, 255));
 	}
 }
 
 void Application::MakeProjector()
 {
-	using namespace std;
-	using namespace sf;
-
-	// Collapsed function body. Transfering ownership of local unique ptr to the container
-	auto Setup = [this](unique_ptr<b2Actor2D>& p, const Color c) ->void
+	auto b2ActorInit = [this](std::unique_ptr<b2Actor2D>& p, const sf::Color c) -> void
 	{
 		p->GetShape()->setOutlineThickness(-1);
-		p->GetShape()->setOutlineColor(Color::Black);
+		p->GetShape()->setOutlineColor(sf::Color::Black);
 		p->GetShape()->setFillColor(c);
-		b2Actors.push_back(move(p));
+		m_b2Actors.push_back(std::move(p));
 	};
 
-	// Projector Pivot
-	const int Row = 14;
-	const float ViewportX = (float)RenderWindowData.Width;
-	const float ViewportY = (float)RenderWindowData.Height;
-	const Vector2f StartLocation(ViewportX * 0.15f, ViewportY - 16.0f - (Row * 32.0f));
-	const Vector2f Location(StartLocation.x + 32.0f, StartLocation.y + (Row / 2)*32.0f);
-	unique_ptr<b2Actor2D> Pivot = make_unique<b2Actor2D>(this, World.get(), "Pivot", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, Vector2f(8.0f, 8.0f), Location, 0.0f, false, false);
-	Pivot->BindOnTick(PivotTick);
-	PivotCache = Pivot.get();
-	Setup(Pivot, Color(0, 0, 255, 100));
+	const sf::Vector2f pivotPos(100, 400);
+	auto pivot = std::make_unique<b2Actor2D>(this, m_World.get(), "pivot", EActorShapeType::Rectangle, Eb2ShapeType::Polygon, sf::Vector2f(100, 8), pivotPos, 0.0f, true);
+	b2Body* pivotBody = pivot->GetBodyInstance();
+	pivot->BindOnTick(PivotTick);
+	b2ActorInit(pivot, sf::Color(100, 100, 100, 255));
+	m_PivotCache = pivot.get();
 
-	unique_ptr<b2Actor2D> Wheel = make_unique<b2Actor2D>(this, World.get(), "Wheel", EActorShapeType::EST_Circle, Eb2ShapeType::ECT_Circle, Vector2f(128.0f, 128.0f), Location, 0.0f, false, true);
-	Wheel->BindOnTick(WheelTick);
-	WheelCache = Wheel.get();
-	Setup(Wheel, Color(0, 255, 255, 40));
+	auto wheel = std::make_unique<b2Actor2D>(this, m_World.get(), "wheel", EActorShapeType::Circle, Eb2ShapeType::Circle, sf::Vector2f(32, 32), pivotPos, 0.0f, true);
+	b2Body* wheelBody = wheel->GetBodyInstance();
+	b2ActorInit(wheel, sf::Color(100, 255, 100, 255));
+	m_WheelCache = wheel.get();
+
+	b2RevoluteJointDef revoluteJointDef;
+	revoluteJointDef.bodyA = pivotBody;
+	revoluteJointDef.bodyB = wheelBody;
+	revoluteJointDef.collideConnected = false;
+	revoluteJointDef.localAnchorA.Set(0, 0);
+	revoluteJointDef.localAnchorB.Set(0, 0);
+	m_World->CreateJoint(&revoluteJointDef);
 }
 
 void Application::SetupText()
 {
-	const float Unit = 32.0f;
-	const float LineY1 = 530;
-	const float LineY2 = 620;
-	std::unique_ptr<FTextData> t1 = std::make_unique<FTextData>();
-	t1->StartLocation = SFML::Vector2f(80, LineY1);
-	t1->Text.setCharacterSize(30);
-	t1->Font = FAssetLoader::FindFont(&AssetLoader, RESOURCES_FONT_CHALK);
-	t1->Init();
-	LevelTextCache = t1.get();
-	TextRenderer.Add(t1);
+	sf::Font* pixelFont = FAssetLoader::FindFont(&m_AssetLoader, RESOURCES_FONT_PIXEL);
+	sf::Font* chalkFont = FAssetLoader::FindFont(&m_AssetLoader, RESOURCES_FONT_CHALK);
 
-	std::unique_ptr<FTextData> t2 = std::make_unique<FTextData>();
-	t2->StartLocation = SFML::Vector2f(80, LineY2);
-	t2->Text.setCharacterSize(30);
-	t2->Font = FAssetLoader::FindFont(&AssetLoader, RESOURCES_FONT_CHALK);
-	t2->Init();
-	ScoreCache = t2.get();
-	TextRenderer.Add(t2);
+	if (pixelFont)
+	{
+		auto addText = [this, pixelFont](const std::string& text, const sf::Vector2f& pos, FTextData*& cache)
+		{
+			auto data = std::make_unique<FTextData>();
+			data->m_Text.setFont(*pixelFont);
+			data->m_Text.setString(text);
+			data->m_Text.setPosition(pos);
+			data->m_Text.setOutlineThickness(1.0f);
+			cache = data.get();
+			m_TextRenderer.Add(data);
+		};
 
-	std::unique_ptr<FTextData> t3 = std::make_unique<FTextData>();
-	t3->StartLocation = SFML::Vector2f(768, LineY1);
-	t3->Text.setCharacterSize(30);
-	t3->Font = FAssetLoader::FindFont(&AssetLoader, RESOURCES_FONT_CHALK);
-	t3->Init();
-	HiScoreCache = t3.get();
-	TextRenderer.Add(t3);
+		addText("LEVEL", sf::Vector2f(100, 640), m_LevelTextCache);
+		addText("SCORE", sf::Vector2f(250, 640), m_ScoreCache);
+		addText("HISCORE", sf::Vector2f(400, 640), m_HiScoreCache);
+		addText("REQ. BALL", sf::Vector2f(550, 640), m_BallCountCache);
+		addText("REMAINING TIME", sf::Vector2f(100, 680), m_CountdownTimeCache);
+		addText("ELAPSED MIN", sf::Vector2f(400, 680), m_ElapsedTimeCache);
+	}
 
-	std::unique_ptr<FTextData> t4 = std::make_unique<FTextData>();
-	t4->StartLocation = SFML::Vector2f(768, LineY2);
-	t4->Text.setCharacterSize(30);
-	t4->Font = FAssetLoader::FindFont(&AssetLoader, RESOURCES_FONT_CHALK);
-	t4->Init();
-	BallCountCache = t4.get();
-	TextRenderer.Add(t4);
-
-	std::unique_ptr<FTextData> t5 = std::make_unique<FTextData>();
-	t5->StartLocation = SFML::Vector2f(368, LineY1);
-	t5->Text.setCharacterSize(30);
-	t5->Font = FAssetLoader::FindFont(&AssetLoader, RESOURCES_FONT_CHALK);
-	t5->Init();
-	CountdownTimeCache = t5.get();
-	TextRenderer.Add(t5);
-
-	std::unique_ptr<FTextData> t6 = std::make_unique<FTextData>();
-	t6->StartLocation = SFML::Vector2f(368, LineY2);
-	t6->Text.setCharacterSize(30);
-	t6->Font = FAssetLoader::FindFont(&AssetLoader, RESOURCES_FONT_CHALK);
-	t6->Init();
-	ElapsedTimeCache = t6.get();
-	TextRenderer.Add(t6);
-
-	const float ViewportX = (float)RenderWindowData.Width;
-	const float ViewportY = (float)RenderWindowData.Height;
-	std::unique_ptr<FTextData> t7 = std::make_unique<FTextData>(); // middle
-	t7->StartLocation = SFML::Vector2f(ViewportX/2, ViewportY/2);
-	t7->EndLocation = SFML::Vector2f(ViewportX / 2, -16);
-	t7->FadeTime = 1.0f;
-	t7->Text.setCharacterSize(30);
-	t7->TextData = "SPACE TO START!";
-	t7->Font = FAssetLoader::FindFont(&AssetLoader, RESOURCES_FONT_CHALK);
-	t7->bIsPaused = true;
-	t7->Init();
-	CenterTextCache = t7.get();
-	TextRenderer.Add(t7);
+	if (chalkFont)
+	{
+		auto data = std::make_unique<FTextData>();
+		data->m_Text.setFont(*chalkFont);
+		data->m_Text.setString("GET READY");
+		data->m_Text.setCharacterSize(80);
+		data->m_Text.setPosition(250, 250);
+		data->m_StartLocation = sf::Vector2f(250, 250);
+		data->m_EndLocation = sf::Vector2f(250, 0);
+		data->m_bIsPersistance = false;
+		data->m_FadeTime = 1.5f;
+		data->m_bIsPaused = true;
+		m_CenterTextCache = data.get();
+		m_TextRenderer.Add(data);
+	}
 }
 
 void Application::SpawnBall()
 {
-	// Get magnitude of the multiplier.
-	const float velocity = GameState.GetChargedBallVelocity();
+	const float ballSize = 32.0f;
+	auto ball = std::make_unique<b2Actor2D>(this, m_World.get(), "ball", EActorShapeType::Circle, Eb2ShapeType::Circle, sf::Vector2f(ballSize, ballSize), m_PivotCache->GetLocation(), m_PivotCache->GetBodyInstance()->GetAngle(), true);
+	ball->GetShape()->setTexture(FAssetLoader::FindTexture(&m_AssetLoader, RESOURCES_TEXTURE_BASKETBALL));
+	ball->BindOnTick(BallTick);
 
-	const SFML::Vector2f BallSpawnLocation(PivotCache->GetLocation() + SFML::Vector2f(32, 32));
+	const float rad = ball->GetBodyInstance()->GetAngle();
+	const b2Vec2 force(cos(rad) * m_GameState.GetChargedBallVelocity(), sin(rad) * m_GameState.GetChargedBallVelocity());
+	ball->GetBodyInstance()->ApplyLinearImpulseToCenter(force, true);
 
-	// Construct data to parse.
-	Fb2ActorSpawnParam SpawnParam;
-	SpawnParam.Package = this;
-	SpawnParam.WorldContext = World.get();
-	SpawnParam.Name = "Ball";
-	SpawnParam.ShapeType = EActorShapeType::EST_Circle;
-	SpawnParam.BodyType = Eb2ShapeType::ECT_Circle;
-	SpawnParam.Size = SFML::Vector2f(32, 32);
-	SpawnParam.Location = BallSpawnLocation;
-	SpawnParam.Rotation = 0.0f;
-	SpawnParam.bIsDynamicBody = true;
-	SpawnParam.bGenerateOverlaps = false;
-	SpawnParam.bAutoActivate = true;
-
-	auto FindPredicate = [](auto& P)->bool { return !P->IsActive(); };
-	auto pActor = std::find_if(Balls.begin(), Balls.end(), FindPredicate);
-
-	// If found
-	if (pActor != Balls.end())
-	{
-		b2Actor2D* const ReuseBall = (*pActor) ? (*pActor).get() : nullptr;
-		if (ReuseBall)
-		{
-			ReuseBall->GetBodyInstance()->SetLinearVelocity(b2Vec2(velocity, -velocity));
-			std::cout << "X: "<<ReuseBall->GetBodyInstance()->GetLinearVelocity().x << " Y: "<<ReuseBall->GetBodyInstance()->GetLinearVelocity().y << std::endl;
-			ReuseBall->SetInitTransform(SpawnParam.Location, SpawnParam.Rotation);
-			ReuseBall->ResetToInitTransform();
-			ReuseBall->Activate();
-		}
-	}
-	else
-	{
-		// Construct new.
-		std::unique_ptr<b2Actor2D> Ball = std::make_unique<b2Actor2D>(SpawnParam);
-		Ball->GetShape()->setTexture(FAssetLoader::FindTexture(&AssetLoader, RESOURCES_TEXTURE_BASKETBALL));
-		Ball->GetBodyInstance()->SetLinearVelocity(b2Vec2(velocity , -velocity));
-		std::cout << "X: " << Ball->GetBodyInstance()->GetLinearVelocity().x << " Y: " << Ball->GetBodyInstance()->GetLinearVelocity().y << std::endl;
-		Ball->GetFixtureDefinition()->density = 0.83f;
-		Ball->GetFixtureDefinition()->friction = 0.4f;
-		Ball->GetFixtureDefinition()->restitution = 0.65f;
-		Ball->BindOnTick(BallTick);
-		//Ball->BindOnBeginoverlap(BallOverlap);
-		Balls.push_back(std::move(Ball));
-	}
+	m_Balls.push_back(std::move(ball));
 }
 
-void Application::PivotTick(b2Actor2D* Actor)
-{
-	if (!Actor)
-	{
-		return;
-	} 
-
-	const float ElapsedTime = Actor->GetPackage()->GetTickHandle().GetElapsedTime();
-	const float deltaY = 3.0f * cosf(ElapsedTime) / 32.0f;
-	b2Vec2 Location = Actor->GetBodyInstance()->GetPosition() + b2Vec2(0, deltaY);
-	Actor->GetBodyInstance()->SetTransform(Location, Actor->GetBodyInstance()->GetAngle());
+// Implementations for functions moved from header
+sf::VideoMode FRenderWindowData::GetVideoModeFromData() 
+{ 
+	return sf::VideoMode(m_Width, m_Height, m_BitsPerPixel); 
 }
 
-void Application::WheelTick(b2Actor2D* Actor)
-{
-	if (!Actor) 
-	{
-		return;
-	}
-	
-	b2Vec2 PivotLocation = Actor->GetPackage()->PivotCache->GetBodyInstance()->GetPosition();
-	Actor->GetBodyInstance()->SetTransform(PivotLocation, Actor->GetBodyInstance()->GetAngle());
+std::string FRenderWindowData::GetWindowName() 
+{ 
+	return m_WindowName; 
 }
 
-void Application::BallTick(b2Actor2D* Actor)
-{
-	if (!Actor) 
-	{
-		return;
-	}
-
-	if (!Actor->GetPackage()->GameState.GetIsGameStarted())
-	{
-		return;
-	}
-
-	const bool Ax = Actor->GetLocation().x >= Actor->GetPackage()->RenderWindowData.Width + 64.0f;
-	const bool Bx = Actor->GetLocation().x <= -64.0f;
-	const bool Ay = Actor->GetLocation().y >= Actor->GetPackage()->RenderWindowData.Height + 64.0f;
-	const bool By = Actor->GetLocation().y <= -64.0f;
-
-	if (Ax || Bx || Ay || By)
-	{
-		Actor->MakeInactive();
-	}
+b2World* Application::GetWorld() const
+{ 
+	return m_World.get(); 
 }
 
-void Application::SensorOverlap(b2Actor2D* OverlapActor)
-{
-	if (!OverlapActor->GetPackage()->GameState.GetIsGameStarted()) return;
+FTickHandle& Application::GetTickHandle() 
+{ 
+	return m_TickHandle; 
+}
 
-	if (OverlapActor->GetObjectName() == "Ball")
-	{
-		OverlapActor->GetPackage()->GameState.ScoreBall();
-	}
+sf::RenderWindow* Application::GetWindow() 
+{ 
+	return &m_AppWindow; 
 }
