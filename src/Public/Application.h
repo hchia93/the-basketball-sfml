@@ -35,11 +35,9 @@ public:
 
 	int Initialize();
 	void BeginPlay();
-	void EndPlay();
 
 	sf::RenderWindow& GetAppWindow()	{ return m_AppWindow; }
-	FAssetLoader& GetAssetLoader()		{ return m_AssetLoader; }
-	std::shared_ptr<b2World> GetWorld() { return World; }
+	std::shared_ptr<b2World> GetWorld() { return m_World; }
 
 	float GetElapsedTime() const { return m_ElapsedTime; }
 	void ClearTimer() { m_ElapsedTime = 0.0f; }
@@ -64,22 +62,22 @@ private:
 	void SpawnBall();
 
 	FAssetLoader m_AssetLoader;
-	FGameState GameState;
+	FGameState m_GameState;
 	FTextWidgetProcessor m_TextProcessor;
 
 	FAppWindowData m_AppWindowData;
 	sf::RenderWindow m_AppWindow;
 
-	sf::Music* BGM;
+	sf::Music* m_BGM;
 	
 	//Box2D
 	b2Vec2 Gravity; 
-	std::shared_ptr<b2World> World;
+	std::shared_ptr<b2World> m_World;
 	std::unique_ptr<b2Actor2DContactListener> b2ActorContactListner;
 
 	std::vector<std::unique_ptr<sf::Shape>> RenderShapes;
 	std::vector<std::unique_ptr<b2Actor2D>> b2Actors;
-	std::vector<std::unique_ptr<b2Actor2D>> Balls;
+	std::vector<std::unique_ptr<b2Actor2D>> m_Balls;
 
 	sf::Vertex AngleIndicators[2];
 
@@ -93,7 +91,7 @@ private:
 	sf::RectangleShape* ChargeGaugeMax;		// Cached pointer, no need clear. Cleared via RenderShapes.
 	sf::RectangleShape* ChargeGaugeProgress;	// Cached pointer, no need clear. Cleared via RenderShapes.
 
-	b2Actor2D* PivotCache;		// Cached pointer, no need clear. Cleared via b2Actors.
+	b2Actor2D* pivotCache;		// Cached pointer, no need clear. Cleared via b2Actors.
 	b2Actor2D* WheelCache;		// Cached pointer, no need clear. Cleared via b2Actors.
 
 	FTextWidget* m_LevelNumberWidget;

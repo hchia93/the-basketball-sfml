@@ -152,9 +152,9 @@ void b2Actor2D::MakeShapeInstance(const EActorShapeType ShapeType)
 {
 	switch (ShapeType)
 	{
-		case EActorShapeType::EST_Rectangle:	ObjectShapes.RectangleShape =	std::make_unique<sf::RectangleShape>(); 		break;
-		case EActorShapeType::EST_Circle:		ObjectShapes.CircleShape	=	std::make_unique<sf::CircleShape>();			break;
-		case EActorShapeType::EST_Convex:		ObjectShapes.ConvexShape	=	std::make_unique<sf::ConvexShape>();			break;
+		case EActorShapeType::Rectangle:	ObjectShapes.RectangleShape =	std::make_unique<sf::RectangleShape>(); 		break;
+		case EActorShapeType::Circle:		ObjectShapes.CircleShape	=	std::make_unique<sf::CircleShape>();			break;
+		case EActorShapeType::Convex:		ObjectShapes.ConvexShape	=	std::make_unique<sf::ConvexShape>();			break;
 	}
 
 	// Prevent spawn at 0,0,0 at being visible before the first tick update.
@@ -168,13 +168,13 @@ void b2Actor2D::SetShapeProperties(const EActorShapeType ShapeType, sf::Vector2f
 	if (!ObjectShapeCache) ObjectShapeCache = ObjectShapes.Get();
 	switch (ShapeType)
 	{
-		case EActorShapeType::EST_Circle:
+		case EActorShapeType::Circle:
 			if (CircleShape* const p = dynamic_cast<CircleShape*>(ObjectShapeCache))
 			{
 				p->setRadius(Size.x/2);
 			}
 			break;
-		case EActorShapeType::EST_Rectangle:
+		case EActorShapeType::Rectangle:
 			if (RectangleShape* const p = dynamic_cast<RectangleShape*>(ObjectShapeCache))
 			{
 				p->setSize(Size);
@@ -187,10 +187,10 @@ void b2Actor2D::MakeB2ShapeInstance(const Eb2ShapeType BodyType)
 {
 	switch (BodyType)
 	{
-		case Eb2ShapeType::ECT_Chain:		BodyShape = std::make_unique<b2ChainShape>();	break;
-		case Eb2ShapeType::ECT_Edge:		BodyShape = std::make_unique<b2EdgeShape>();	break;
-		case Eb2ShapeType::ECT_Polygon:		BodyShape = std::make_unique<b2PolygonShape>(); break;
-		case Eb2ShapeType::ECT_Circle:		BodyShape = std::make_unique<b2CircleShape>();	break;
+		case Eb2ShapeType::Chain:		BodyShape = std::make_unique<b2ChainShape>();	break;
+		case Eb2ShapeType::Edge:		BodyShape = std::make_unique<b2EdgeShape>();	break;
+		case Eb2ShapeType::Polygon:		BodyShape = std::make_unique<b2PolygonShape>(); break;
+		case Eb2ShapeType::Circle:		BodyShape = std::make_unique<b2CircleShape>();	break;
 	}
 }
 
@@ -199,11 +199,11 @@ void b2Actor2D::SetB2ShapeProperties(const Eb2ShapeType BodyType, sf::Vector2f S
 	if (!BodyShape) return;
 	switch (BodyType)
 	{
-		case Eb2ShapeType::ECT_Chain:		
-		case Eb2ShapeType::ECT_Edge:		
+		case Eb2ShapeType::Chain:		
+		case Eb2ShapeType::Edge:		
 			//Not supported yet.
 			break;
-		case Eb2ShapeType::ECT_Polygon:	
+		case Eb2ShapeType::Polygon:	
 		{
 			if(b2PolygonShape* const p = dynamic_cast<b2PolygonShape*>(BodyShape.get()))
 			{
@@ -213,7 +213,7 @@ void b2Actor2D::SetB2ShapeProperties(const Eb2ShapeType BodyType, sf::Vector2f S
 			break;
 		}
 			
-		case Eb2ShapeType::ECT_Circle:		
+		case Eb2ShapeType::Circle:		
 		{
 			if (b2CircleShape* const p = dynamic_cast<b2CircleShape*>(BodyShape.get()))
 			{

@@ -32,7 +32,7 @@ std::vector<std::unique_ptr<FTextWidget>>& FTextWidgetProcessor::GetTextWidgets(
 
 void FTextWidgetProcessor::Tick()
 {
-	for (auto&& widget : m_TextWidgets)
+	for (auto& widget : m_TextWidgets)
 	{
 		// Lerps
 		if (widget->m_FadeTime > 0.0f && widget->m_bIsActive && !widget->m_bIsPaused)
