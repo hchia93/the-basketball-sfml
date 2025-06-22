@@ -9,11 +9,12 @@
 #include "Defines.h"
 #include "AssetLoader.h"
 #include "GameState.h"
-#include "TextProcessor.h"
+#include "TextWidgetProcessor.h"
 
 // Forward declaration
 class Actor;
 class ActorContactListener;
+class GameInput;
 
 struct FAppWindowData
 {
@@ -41,31 +42,30 @@ public:
 	float GetElapsedTime() const { return m_ElapsedTime; }
 	void ClearTimer() { m_ElapsedTime = 0.0f; }
 
+	// Public getters for private members needed by GameLogic
+	FGameState& GetGameState() { return m_GameState; }
+	const FAppWindowData& GetAppWindowData() const { return m_AppWindowData; }
+	Actor* GetPivotCache() const { return m_PivotCache; }
+	FAssetLoader& GetAssetLoader() { return m_AssetLoader; }
+	GameInput* GetGameInput() { return m_GameInput.get(); }
+
 private:
 	void UpdateFrame(const float deltaTime);
 	void HandleWindowEvents();
 	void UpdateGameSystems();
-	void UpdateUIText();
-	void HandleInput();
 	void RenderFrame();
-	void HandleKeyboardInput();
-	void HandleMouseInput();
-	void UpdateVisualFeedback();
 	void ResetGame();
 
 	float m_ElapsedTime = 0.0f;
 	float m_TimeElapsedSinceLastFrame = 0.0f;
 	sf::Clock m_FixedUpdateClock;
 
-	static void PivotTick(Actor* actor);
-	static void WheelTick(Actor* actor);
-	static void BallTick(Actor* actor);
-	static void SensorOverlap(Actor* overlapActor);
-
 	void MakeTrack();
 	void MakeProjector();
 	void SetupText();
 	void SpawnBall();
+	void SetupInputCallbacks();
+	void UpdateVisualFeedback();
 
 	FAssetLoader m_AssetLoader;
 	FGameState m_GameState;
@@ -73,6 +73,7 @@ private:
 	FAppWindowData m_AppWindowData;
 	sf::RenderWindow m_AppWindow;
 	sf::Music* m_BGM;
+	std::unique_ptr<GameInput> m_GameInput;
 
 	b2Vec2 m_Gravity;
 	std::shared_ptr<b2World> m_World;
@@ -82,14 +83,11 @@ private:
 	std::vector<std::unique_ptr<Actor>> m_Balls;
 
 	sf::Vertex m_AngleIndicators[2];
-	bool m_RightMousePressed = false;
-	bool m_MiddleMousePressed = false;
 
 	sf::RectangleShape* m_ChargeGaugeMax;
 	sf::RectangleShape* m_ChargeGaugeProgress;
 
 	Actor* m_PivotCache;
-	Actor* m_WheelCache;
 	
 	FTextWidget* m_LevelNumberWidget;
 	FTextWidget* m_ScoreWidget;

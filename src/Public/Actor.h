@@ -56,7 +56,9 @@ public:
     void OnBeginOverlap(Actor* overlapActor);
     void BindOnBeginoverlap(std::function<void(Actor*)> callback);
     void BindOnTick(std::function<void(Actor*)> callback);
+    void BindOnOutOfBounds(std::function<void(Actor*)> callback);
     bool HasOverlapCallback() const;
+    bool IsOutOfBounds(const sf::Vector2f& viewportSize) const;
 
     // Public Members
     std::unique_ptr<sf::RectangleShape> m_DebugForward;
@@ -65,6 +67,7 @@ private:
     // Callbacks
     std::function<void(Actor*)> m_OnBeginOverlapCallback;
     std::function<void(Actor*)> m_OnTickCallback;
+    std::function<void(Actor*)> m_OnOutOfBoundsCallback;
 
     // Core Data
     std::string m_ObjectName;

@@ -124,6 +124,11 @@ void Actor::BindOnBeginoverlap(std::function<void(Actor*)> callback)
 	m_OnBeginOverlapCallback = callback;
 }
 
+void Actor::BindOnOutOfBounds(std::function<void(Actor*)> callback)
+{
+	m_OnOutOfBoundsCallback = callback;
+}
+
 void Actor::OnBeginOverlap(Actor* overlapActor)
 {
 	if (m_OnBeginOverlapCallback)
@@ -135,6 +140,17 @@ void Actor::OnBeginOverlap(Actor* overlapActor)
 bool Actor::HasOverlapCallback() const
 {
 	return static_cast<bool>(m_OnBeginOverlapCallback);
+}
+
+bool Actor::IsOutOfBounds(const sf::Vector2f& viewportSize) const
+{
+	sf::Vector2f location = GetLocation();
+	const bool ax = location.x >= viewportSize.x + 64.0f;
+	const bool bx = location.x <= -64.0f;
+	const bool ay = location.y >= viewportSize.y + 64.0f;
+	const bool by = location.y <= -64.0f;
+	
+	return ax || bx || ay || by;
 }
 
 sf::Shape* Actor::GetShape() const

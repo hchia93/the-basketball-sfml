@@ -76,8 +76,13 @@ void FGameState::Tick()
 		m_CountdownTime -= DELTA_TIME_STEP;
 		m_TotalSurvivedTime += DELTA_TIME_STEP;
 		
-		// Notify time changes every frame when game is running
-		NotifyCallbacks(EGameStateEvent::TimeChanged);
+		// Only notify time changes when the countdown time changes by a whole second
+		static float lastCountdownTime = m_CountdownTime;
+		if (static_cast<int>(m_CountdownTime) != static_cast<int>(lastCountdownTime))
+		{
+			NotifyCallbacks(EGameStateEvent::TimeChanged);
+			lastCountdownTime = m_CountdownTime;
+		}
 	}
 }
 

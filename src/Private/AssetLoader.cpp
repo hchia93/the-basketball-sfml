@@ -4,20 +4,7 @@
 
 FAssetLoader::~FAssetLoader() 
 {
-	for (auto&& element : m_TextureMap)
-	{
-		element.second.reset();
-	}
-
-	for (auto&& element : m_FrontMap)
-	{
-		element.second.reset();
-	}
-
-	for (auto&& element : m_MusicMap)
-	{
-		element.second.reset();
-	}
+	// std::unique_ptr will automatically clean up all resources
 }
 
 bool FAssetLoader::LoadResources()

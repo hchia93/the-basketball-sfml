@@ -3,7 +3,6 @@
 #include <functional>
 #include <string>
 #include "Defines.h"
-#include "Interface.h"
 
 class Application;
 
@@ -47,18 +46,4 @@ public:
 	
 	// Update method
 	void UpdateText();
-};
-
-class FTextWidgetProcessor : public ITickable
-{
-public:
-	virtual void Tick() override;
-
-	FTextWidget* AddAndInitialize(std::unique_ptr<FTextWidget>& data);
-	std::vector<std::unique_ptr<FTextWidget>>& GetTextWidgets();
-
-private:
-
-	std::vector<std::unique_ptr<FTextWidget>> m_TextWidgets;
-};
-
+}; 

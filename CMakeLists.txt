@@ -23,28 +23,37 @@ FetchContent_MakeAvailable(box2d)
 
 # Set source files
 set(SOURCES
-    src/Private/main.cpp
+    src/Private/Actor.cpp
+    src/Private/ActorBuilder.cpp
+    src/Private/ActorContactListener.cpp
+    src/Private/ActorPhysicComponent.cpp
+    src/Private/ActorRenderComponent.cpp
     src/Private/Application.cpp
     src/Private/AssetLoader.cpp
-    src/Private/Actor.cpp
-    src/Private/ActorContactListener.cpp
+    src/Private/GameInput.cpp
+    src/Private/GameLogic.cpp
     src/Private/GameState.cpp
-    src/Private/TextProcessor.cpp
-    src/Private/ActorRenderComponent.cpp
-    src/Private/ActorPhysicComponent.cpp
+    src/Private/main.cpp
+    src/Private/TextWidgetProcessor.cpp
+    src/Private/TextWidget.cpp
+    src/Private/TextWidgetBuilder.cpp
 )
 
 set(HEADERS
+    src/Public/Actor.h
+    src/Public/ActorBuilder.h
+    src/Public/ActorContactListener.h
+    src/Public/ActorPhysicComponent.h
+    src/Public/ActorRenderComponent.h
     src/Public/Application.h
     src/Public/AssetLoader.h
-    src/Public/Actor.h
-    src/Public/ActorContactListener.h
     src/Public/Defines.h
+    src/Public/GameLogic.h
     src/Public/GameState.h
     src/Public/Interface.h
-    src/Public/TextProcessor.h
-    src/Public/ActorRenderComponent.h
-    src/Public/ActorPhysicComponent.h
+    src/Public/TextWidgetProcessor.h
+    src/Public/TextWidget.h
+    src/Public/TextWidgetBuilder.h
 )
 
 # Create executable
@@ -56,7 +65,7 @@ add_executable(BasketballSFML
     src/Public/Defines.h
     src/Public/GameState.h
     src/Public/Interface.h
-    src/Public/TextProcessor.h
+    src/Public/TextWidgetProcessor.h
     src/Public/ActorRenderComponent.h
     src/Public/ActorPhysicComponent.h
 )
@@ -101,15 +110,20 @@ add_custom_command(TARGET BasketballSFML POST_BUILD
 
 if(WIN32)
     target_sources(BasketballSFML PRIVATE
-        src/Private/main.cpp
+        src/Private/Actor.cpp
+        src/Private/ActorBuilder.cpp
+        src/Private/ActorContactListener.cpp
+        src/Private/ActorPhysicComponent.cpp
+        src/Private/ActorRenderComponent.cpp
         src/Private/Application.cpp
         src/Private/AssetLoader.cpp
-        src/Private/Actor.cpp
-        src/Private/ActorContactListener.cpp
+        src/Private/GameInput.cpp
+        src/Private/GameLogic.cpp
         src/Private/GameState.cpp
-        src/Private/TextProcessor.cpp
-        src/Private/ActorRenderComponent.cpp
-        src/Private/ActorPhysicComponent.cpp
+        src/Private/main.cpp
+        src/Private/TextWidgetProcessor.cpp
+        src/Private/TextWidget.cpp
+        src/Private/TextWidgetBuilder.cpp
     )
     set_property(TARGET BasketballSFML PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:BasketballSFML>")
 endif()
