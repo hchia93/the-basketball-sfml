@@ -26,7 +26,6 @@ jobs:
     - name: Install vcpkg dependencies
       run: |
         vcpkg install sfml:x64-windows
-        vcpkg install box2d:x64-windows
         
     - name: Configure CMake
       run: |
