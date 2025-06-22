@@ -12,19 +12,18 @@
 #include "TextProcessor.h"
 
 // Forward declaration
-class b2Actor2D;
-class b2Actor2DContactListener;
+class Actor;
+class ActorContactListener;
 
 struct FAppWindowData
 {
-	unsigned int Width = 1000;
-	unsigned int Height = 728;
-	
-	std::string WindowName = "BasketBallSimulator";
+	unsigned int m_Width = 1000;
+	unsigned int m_Height = 728;
+	std::string m_WindowName = "BasketBallSimulator";
 
-	sf::VideoMode GetVideoModeFromData() { return sf::VideoMode({Width, Height}); }
-	const std::string& GetWindowName() { return WindowName; }
-	sf::Vector2f GetViewportCenter() { return sf::Vector2f(Width / 2.0f, Height / 2.0f); }
+	sf::VideoMode GetVideoModeFromData() { return sf::VideoMode({m_Width, m_Height}); }
+	const std::string& GetWindowName() { return m_WindowName; }
+	sf::Vector2f GetViewportCenter() { return sf::Vector2f(m_Width / 2.0f, m_Height / 2.0f); }
 };
 
 class Application
@@ -36,25 +35,32 @@ public:
 	int Initialize();
 	void BeginPlay();
 
-	sf::RenderWindow& GetAppWindow()	{ return m_AppWindow; }
+	sf::RenderWindow& GetAppWindow() { return m_AppWindow; }
 	std::shared_ptr<b2World> GetWorld() { return m_World; }
 
 	float GetElapsedTime() const { return m_ElapsedTime; }
 	void ClearTimer() { m_ElapsedTime = 0.0f; }
 
 private:
-	// The core update function, called by the main loop in BeginPlay.
-	void UpdateFrame(const float DeltaTime);
+	void UpdateFrame(const float deltaTime);
+	void HandleWindowEvents();
+	void UpdateGameSystems();
+	void UpdateUIText();
+	void HandleInput();
+	void RenderFrame();
+	void HandleKeyboardInput();
+	void HandleMouseInput();
+	void UpdateVisualFeedback();
+	void ResetGame();
 
-	// FTickHandle removal
 	float m_ElapsedTime = 0.0f;
 	float m_TimeElapsedSinceLastFrame = 0.0f;
 	sf::Clock m_FixedUpdateClock;
 
-	static void PivotTick(b2Actor2D* Actor);
-	static void WheelTick(b2Actor2D* Actor);
-	static void BallTick(b2Actor2D* Actor);
-	static void SensorOverlap(b2Actor2D* OverlapActor);
+	static void PivotTick(Actor* actor);
+	static void WheelTick(Actor* actor);
+	static void BallTick(Actor* actor);
+	static void SensorOverlap(Actor* overlapActor);
 
 	void MakeTrack();
 	void MakeProjector();
@@ -64,36 +70,27 @@ private:
 	FAssetLoader m_AssetLoader;
 	FGameState m_GameState;
 	FTextWidgetProcessor m_TextProcessor;
-
 	FAppWindowData m_AppWindowData;
 	sf::RenderWindow m_AppWindow;
-
 	sf::Music* m_BGM;
-	
-	//Box2D
-	b2Vec2 Gravity; 
+
+	b2Vec2 m_Gravity;
 	std::shared_ptr<b2World> m_World;
-	std::unique_ptr<b2Actor2DContactListener> b2ActorContactListner;
+	std::unique_ptr<ActorContactListener> m_B2ActorContactListner;
+	std::vector<std::unique_ptr<sf::Shape>> m_RenderShapes;
+	std::vector<std::unique_ptr<Actor>> m_B2Actors;
+	std::vector<std::unique_ptr<Actor>> m_Balls;
 
-	std::vector<std::unique_ptr<sf::Shape>> RenderShapes;
-	std::vector<std::unique_ptr<b2Actor2D>> b2Actors;
-	std::vector<std::unique_ptr<b2Actor2D>> m_Balls;
+	sf::Vertex m_AngleIndicators[2];
+	bool m_RightMousePressed = false;
+	bool m_MiddleMousePressed = false;
 
-	sf::Vertex AngleIndicators[2];
+	sf::RectangleShape* m_ChargeGaugeMax;
+	sf::RectangleShape* m_ChargeGaugeProgress;
 
-	bool bRightMousePressed = false;
-	bool bMiddleMousePressed = false;
-
-	//////////////////////////////////////////
-	//		Cached Pointers
-	//////////////////////////////////////////
-
-	sf::RectangleShape* ChargeGaugeMax;		// Cached pointer, no need clear. Cleared via RenderShapes.
-	sf::RectangleShape* ChargeGaugeProgress;	// Cached pointer, no need clear. Cleared via RenderShapes.
-
-	b2Actor2D* pivotCache;		// Cached pointer, no need clear. Cleared via b2Actors.
-	b2Actor2D* WheelCache;		// Cached pointer, no need clear. Cleared via b2Actors.
-
+	Actor* m_PivotCache;
+	Actor* m_WheelCache;
+	
 	FTextWidget* m_LevelNumberWidget;
 	FTextWidget* m_ScoreWidget;
 	FTextWidget* m_HiScoreWidget;

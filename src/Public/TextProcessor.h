@@ -1,5 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <functional>
+#include <string>
 #include "Defines.h"
 #include "Interface.h"
 
@@ -32,11 +34,19 @@ public:
 
 	// Data
 	std::string m_RawString = "NO TEXT";
+	
+	// Callback system
+	std::function<std::string()> m_UpdateCallback;
+	std::string m_Prefix = "";
+	std::string m_Suffix = "";
 
 	// States
 	bool m_bIsActive = true;
 	bool m_bIsPaused = false;
 	bool m_bIsPersistance = true;
+	
+	// Update method
+	void UpdateText();
 };
 
 class FTextWidgetProcessor : public ITickable
