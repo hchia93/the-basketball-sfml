@@ -61,6 +61,7 @@ add_executable(BasketballSFML
     src/Public/Application.h
     src/Public/AssetLoader.h
     src/Public/Actor.h
+    src/Public/ActorBuilder.h 
     src/Public/ActorContactListener.h
     src/Public/Defines.h
     src/Public/GameState.h
