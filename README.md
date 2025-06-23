@@ -8,8 +8,10 @@ To build and run this project, external dependencies are required. The `Dependen
 
 | Dependency | Version | Source |
 |------------|---------|--------|
-| SFML       | 2.6.1   | https://www.sfml-dev.org/          |
+| SFML       | 3.0.0   | https://www.sfml-dev.org/          |
 | Box2D      | 2.4.1   | https://github.com/erincatto/box2d |
+
+Please take note that Box2D is not yet upgraded to 3.0.1 and its dependencies is handled in CMakeList.
 
 ## Project Structure
 
