@@ -2,6 +2,7 @@
 
 The Basketball was one of my university projects. The goal of this project is to show what kind of possible games to make with `Box2D` physics engine.
 
+![preview](preview.png)
 
 ## Prerequisites
 To build and run this project, external dependencies are required. The `DependencyInstaller.bat` script will install them accordingly.
