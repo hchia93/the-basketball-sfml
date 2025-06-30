@@ -4,59 +4,61 @@ The Basketball was one of my university projects. The goal of this project is to
 
 ![preview](preview.png)
 
-## Prerequisites
-To build and run this project, external dependencies are required. The `DependencyInstaller.bat` script will install them accordingly.
-
-| Dependency | Version | Source |
-|------------|---------|--------|
-| SFML       | 3.0.0   | https://www.sfml-dev.org/          |
-| Box2D      | 2.4.1   | https://github.com/erincatto/box2d |
-
-Please take note that Box2D is not yet upgraded to 3.0.1 and its dependencies is handled in CMakeList.
 
 ## Project Structure
 
 ```
 the-basketball-sfml/
-├── CMakeLists.txt                     #cmake-build
-├── vcpkg.json                         #vcpkg manifest (dependencies)
-├── DependencyInstaller.bat            #installing dependencies
-├── VisualStudioSolutionGenerator.bat  #generate vs solution
-├── README.md                          
-├── src/                               #code
-│   ├── Public/                        #headers files
-│   └── Private/                       #impl files
-├── resource/                          #assets
-└── generated-vs/                      #generated content
+├── CMakeLists.txt         # CMake build configuration
+├── vcpkg.json             # Dependency manifest
+├── generate.bat           # Install dependencies and generate solution
+├── README.md              # This file
+├── src/                   # Source code
+│   ├── Public/            # Header files
+│   └── Private/           # Implementation files
+├── resource/              # Game assets
+└── generated-vs/          # Generated Visual Studio solution
 ```
 
-## Instruction
-### Step 1: Installs Required Dependencies
+## Prerequisites
 
-Execute the following file to install relevant dependencies:
+To build and run this project, external dependencies are required. The `generate.bat` script will install them accordingly.
+
+| Dependency | Version/Details |
+|------------|----------------|
+| **SFML**   | Version 3.0.0  |
+| **Box2D**  | Version 2.4.1  |
+
+Please take note that Box2D is not yet upgraded to 3.0.1 and its dependencies are handled in CMakeLists.txt.
+
+> **⚠️ Windows-Only Project**
+> This project is configured for a **Windows-only** environment.
+
+## Running the Project
+
+### Step 1: Generate Solution
+
+Execute the generator script. This will install dependencies and generate the Visual Studio solution:
 
 ```cmd
-DependencyInstaller.bat
+/generate.bat
 ```
 
-### Step 2: Generates the Visual Studio Solution
-
-Next, generate the Visual Studio Solution via the script. This creates the `generated-vs` directory.
-
+The solution will be generated in 
 ```cmd
-VisualStudioSolutionGenerator.bat
+/generated-vs/
 ```
 
-### Step 3: Build and Run
+### Step 2: Build and Run
 
 Open the generated solution located at:
-- **`generated-vs/BasketBallSFML`**
+```cmd
+/generated-vs/BasketBallSFML.sln
+```
 
-Press **F5** to build and run the application.
+> **⚠️ Note:** Ensure the start-up project is `BasketBallSFML`
 
-> **⚠️ Important First-Time Setup**
-> The first time you open the solution, you may need to manually set the startup project.
-> 1. In the **Solution Explorer**, **right-click** on `generated-vs/BasketBallSFML`.
-> 2. Select **"Set as StartUp Project"** from the menu.
->
-> You only need to do this once.
+## Learning Resources
+
+- [SFML Documentation](https://www.sfml-dev.org/documentation.php)
+- [Box2D Documentation](https://box2d.org/documentation/)
