@@ -1,5 +1,5 @@
 # The Basketball
-[![Build Status](https://github.com/hchia93/the-basketball-sfml/actions/workflows/build.yml/badge.svg)](https://github.com/hchia93/ufo-survivor/actions/workflows/build.yml)
+[![Build Status](https://github.com/hchia93/the-basketball-sfml/actions/workflows/build.yml/badge.svg)](https://github.com/hchia93/the-basketball-sfml/actions/workflows/build.yml)
 
 The Basketball was one of my university projects. The goal of this project is to show what kind of possible games to make with `Box2D` physics engine.
 
